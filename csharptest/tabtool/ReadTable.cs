@@ -9,6 +9,7 @@ namespace tabtool
     interface ITableObject
     {
         bool FromString(string s);
+        //bool FromBytes(byte[] bytes);
     }
 
     //表字段读取
@@ -80,7 +81,7 @@ namespace tabtool
         public DataTable ReadFile(string filepath)
         {
             DataTable dt = new DataTable();
-            //首行是字段名 之后是字段值
+            //  首行是字段名 之后是字段值
             string[] lines = File.ReadAllLines(filepath);
             bool firstline = true;
             foreach (var line in lines)

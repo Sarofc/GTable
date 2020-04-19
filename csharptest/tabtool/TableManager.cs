@@ -8,17 +8,17 @@ namespace tabtool
 {
     public abstract class TableManager<T, U> : SingletonTable<U>
     {
-       protected Dictionary<int, T> m_Items = new Dictionary<int, T>();
+       protected Dictionary<int, T> m_Datas = new Dictionary<int, T>();
 
         public Dictionary<int, T> GetTable()
         {
-            return m_Items;
+            return m_Datas;
         }
 
         public T GetTableItem(int key)
         {
             T t;
-            if (m_Items.TryGetValue(key, out t))
+            if (m_Datas.TryGetValue(key, out t))
             {
                 return t;
             }
@@ -28,5 +28,9 @@ namespace tabtool
 
         public abstract bool Load();
 
+        public void Unload()
+        {
+            m_Datas.Clear();
+        }
     }
 }

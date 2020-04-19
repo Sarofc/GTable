@@ -13,7 +13,14 @@ namespace tabtool
     {
         static void Main(string[] args)
         {
-            string clientOutDir, serverOutDir, cppOutDir, csOutDir, excelDir, metafile;
+            Load(args);
+
+            Console.ReadKey();
+        }
+
+        static void Load(string[] args)
+        {
+            string clientOutDir, serverOutDir, csOutDir, excelDir, metafile;
             CmdlineHelper cmder = new CmdlineHelper(args);
             if (cmder.Has("--out_client")) { clientOutDir = cmder.Get("--out_client"); } else { return; }
             if (cmder.Has("--out_server")) { serverOutDir = cmder.Get("--out_server"); } else { return; }
@@ -26,7 +33,7 @@ namespace tabtool
 
             //先读取tablemata文件
             TableStruct tbs = new TableStruct();
-            if(!tbs.ImportTableStruct(metafile))
+            if (!tbs.ImportTableStruct(metafile))
             {
                 Console.WriteLine("解析tbs文件错误！");
                 return;
@@ -34,32 +41,28 @@ namespace tabtool
             Console.WriteLine("解析tbs文件成功");
 
             List<TableMeta> clientTableMetaList = new List<TableMeta>();
-            List<TableMeta> serverTableMetaList = new List<TableMeta>();
 
             //导出文件
-            ExcelHelper helper = new ExcelHelper();
+            TableHelper helper = new TableHelper();
             string[] files = Directory.GetFiles(excelDir, "*.xlsx", SearchOption.TopDirectoryOnly);
             foreach (string filepath in files)
             {
-                string xmlfile = clientOutDir + Path.GetFileNameWithoutExtension(filepath) + ".txt";
-                string txtfile = serverOutDir + Path.GetFileNameWithoutExtension(filepath) + ".txt";
                 try
                 {
-                    DataTable dt = helper.ImportExcelFile(filepath);
+                    var sheets = helper.ImportExcelFile(filepath);
 
-                    if (helper.IsExportFile("client", dt))
+                    for (int i = 0; i < sheets.Count; i++)
                     {
-                        helper.ExportTxtFileEx(xmlfile, dt, "client", new int[] { 0, 2, 3 });
-                        TableMeta meta = helper.ParseTableMeta(Path.GetFileNameWithoutExtension(filepath), dt, "client");
+                        string clientPath = clientOutDir + sheets[i].SheetName + ".txt";
+                        string serverPath = serverOutDir + sheets[i].SheetName + ".txt";
+
+                        var sb = new StringBuilder();
+                        var dt = helper.GetDataTable(sheets[0]);
+                        helper.WriteTxtAsset(dt, clientPath);
+                        //helper.WriteByteAsset(dt, clientPath);
+                        var meta = helper.GetTableMeta(clientPath, dt);
                         clientTableMetaList.Add(meta);
                     }
-                    if (helper.IsExportFile("server", dt))
-                    {
-                        helper.ExportTxtFileEx(txtfile, dt, "server", new int[] { 0, 2, 3 });
-                        TableMeta meta = helper.ParseTableMeta(Path.GetFileNameWithoutExtension(filepath), dt, "server");
-                        serverTableMetaList.Add(meta);
-                    }
-
                 }
                 catch (Exception e)
                 {
@@ -68,19 +71,6 @@ namespace tabtool
                 }
             }
             Console.WriteLine("导出配置文件成功");
-
-            //生成代码
-            if (cmder.Has("--out_cpp"))
-            {
-                cppOutDir = cmder.Get("--out_cpp");
-                if (!Directory.Exists(cppOutDir))
-                    Directory.CreateDirectory(cppOutDir);
-
-                CodeGen.MakeCppFileTbs(tbs.GetMetaList(), cppOutDir);
-                CodeGen.MakeCppFile(serverTableMetaList, cppOutDir);
-                Console.WriteLine("生成.cpp代码文件成功");
-
-            }
 
             if (cmder.Has("--out_cs"))
             {
@@ -95,7 +85,6 @@ namespace tabtool
 
             Console.WriteLine("按任意键退出...");
             Console.ReadKey(false);
-
         }
     }
 }

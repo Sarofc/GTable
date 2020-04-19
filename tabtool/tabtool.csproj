@@ -64,13 +64,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CmdlineHelper.cs" />
-    <Compile Include="ExcelHelper.cs" />
-    <Compile Include="CodeGen.cs" />
-    <Compile Include="Program.cs" />
+    <Compile Include="Source\CmdlineHelper.cs" />
+    <Compile Include="Source\TableHelper.cs" />
+    <Compile Include="Source\CodeGen.cs" />
+    <Compile Include="ExportFieldDefine.cs" />
+    <Compile Include="Source\Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TableMeta.cs" />
-    <Compile Include="TableStruct.cs" />
+    <Compile Include="Source\TableMeta.cs" />
+    <Compile Include="Source\TableStruct.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>

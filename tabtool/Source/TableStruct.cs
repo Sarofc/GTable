@@ -83,12 +83,12 @@ namespace tabtool
                     field.typeName = m.Groups[2].Value;
                     switch (field.typeName)
                     {
-                        case "int": { field.fieldType = TableFieldType.IntField; break; }
-                        case "float": { field.fieldType = TableFieldType.FloatField; break; }
-                        case "string": { field.fieldType = TableFieldType.StringField; break; }
-                        case "int+": { field.fieldType = TableFieldType.IntList; break; }
-                        case "float+": { field.fieldType = TableFieldType.FloatList; break; }
-                        case "string+": { field.fieldType = TableFieldType.StringList; break; }
+                        case "int": { field.fieldType = ETableFieldType.Int; break; }
+                        case "float": { field.fieldType = ETableFieldType.Float; break; }
+                        case "string": { field.fieldType = ETableFieldType.String; break; }
+                        case "int+": { field.fieldType = ETableFieldType.IntList; break; }
+                        case "float+": { field.fieldType = ETableFieldType.FloatList; break; }
+                        case "string+": { field.fieldType = ETableFieldType.StringList; break; }
                         default:
                             Console.WriteLine("tbs文件错误：第{0}行", i);
                             return false;
