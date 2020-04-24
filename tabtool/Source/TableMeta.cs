@@ -19,6 +19,7 @@ namespace tabtool
         public ETableFieldType fieldType;
         public string fieldName;
         public string typeName;
+        public string commits;
 
         public static string[] ts = { "int", "float", "string", "xxx", "List<int>", "List<float>", "List<string>", "xxx" };
 

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Data;
 using System.Xml;
 using System.IO;
+using System.Diagnostics;
 
 namespace tabtool
 {
@@ -14,39 +15,50 @@ namespace tabtool
         static void Main(string[] args)
         {
             Load(args);
-
-            Console.ReadKey();
         }
 
         static void Load(string[] args)
         {
             string clientOutDir, serverOutDir, csOutDir, excelDir, metafile;
             CmdlineHelper cmder = new CmdlineHelper(args);
-            if (cmder.Has("--out_client")) { clientOutDir = cmder.Get("--out_client"); } else { return; }
-            if (cmder.Has("--out_server")) { serverOutDir = cmder.Get("--out_server"); } else { return; }
-            if (cmder.Has("--in_excel")) { excelDir = cmder.Get("--in_excel"); } else { return; }
-            if (cmder.Has("--in_tbs")) { metafile = cmder.Get("--in_tbs"); } else { return; }
+            if (cmder.Has("--out_client")) { clientOutDir = cmder.Get("--out_client"); } else { Console.WriteLine("out_client missing"); return; }
+            //if (cmder.Has("--out_server")) { serverOutDir = cmder.Get("--out_server"); } else { return; }
+            if (cmder.Has("--in_excel")) { excelDir = cmder.Get("--in_excel"); } else { Console.WriteLine("in_excel missing"); return; }
+            if (cmder.Has("--in_tbs")) { metafile = cmder.Get("--in_tbs"); } else { Console.WriteLine("in_tbs missing"); return; }
+
+            Console.WriteLine(clientOutDir);
+            Console.WriteLine(excelDir);
+            Console.WriteLine(metafile);
 
             //创建导出目录
             if (!Directory.Exists(clientOutDir)) Directory.CreateDirectory(clientOutDir);
-            if (!Directory.Exists(serverOutDir)) Directory.CreateDirectory(serverOutDir);
+            //if (!Directory.Exists(serverOutDir)) Directory.CreateDirectory(serverOutDir);
 
             //先读取tablemata文件
             TableStruct tbs = new TableStruct();
             if (!tbs.ImportTableStruct(metafile))
             {
-                Console.WriteLine("解析tbs文件错误！");
+                Console.WriteLine("parse tbs file error！");
                 return;
             }
-            Console.WriteLine("解析tbs文件成功");
+            Console.WriteLine();
+            Console.WriteLine("parse tbs file successful!");
 
             List<TableMeta> clientTableMetaList = new List<TableMeta>();
 
             //导出文件
             TableHelper helper = new TableHelper();
             string[] files = Directory.GetFiles(excelDir, "*.xlsx", SearchOption.TopDirectoryOnly);
+            //var time = new Stopwatch();
+            //time.Start();
             foreach (string filepath in files)
             {
+                var fileName = Path.GetFileName(filepath);
+                if (fileName.StartsWith("~")) continue;
+
+                Console.WriteLine();
+                Console.WriteLine("process xls: " + fileName);
+
                 try
                 {
                     var sheets = helper.ImportExcelFile(filepath);
@@ -54,10 +66,10 @@ namespace tabtool
                     for (int i = 0; i < sheets.Count; i++)
                     {
                         string clientPath = clientOutDir + sheets[i].SheetName + ".txt";
-                        string serverPath = serverOutDir + sheets[i].SheetName + ".txt";
+                        //string serverPath = serverOutDir + sheets[i].SheetName + ".txt";
 
                         var sb = new StringBuilder();
-                        var dt = helper.GetDataTable(sheets[0]);
+                        var dt = helper.GetDataTable(sheets[i]);
                         helper.WriteTxtAsset(dt, clientPath);
                         //helper.WriteByteAsset(dt, clientPath);
                         var meta = helper.GetTableMeta(clientPath, dt);
@@ -66,11 +78,13 @@ namespace tabtool
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(filepath + " 文件出错！");
+                    Console.WriteLine("export error！" + filepath);
                     Console.WriteLine(e.ToString());
                 }
             }
-            Console.WriteLine("导出配置文件成功");
+            //time.Stop();
+            //Console.WriteLine("end: " + time.ElapsedMilliseconds);
+            Console.WriteLine("export success!");
 
             if (cmder.Has("--out_cs"))
             {
@@ -80,11 +94,9 @@ namespace tabtool
 
                 CodeGen.MakeCsharpFileTbs(tbs.GetMetaList(), csOutDir);
                 CodeGen.MakeCsharpFile(clientTableMetaList, csOutDir);
-                Console.WriteLine("生成.cs代码文件成功");
+                Console.WriteLine();
+                Console.WriteLine("generate .cs code successful!");
             }
-
-            Console.WriteLine("按任意键退出...");
-            Console.ReadKey(false);
         }
     }
 }

@@ -107,9 +107,9 @@ namespace tabtool
 
             try
             {
-                using (FileStream file = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                using (FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                 {
-                    m_Hssfworkbook = new XSSFWorkbook(file);
+                    m_Hssfworkbook = new XSSFWorkbook(fs);
                 }
             }
             catch (Exception e)
@@ -124,7 +124,7 @@ namespace tabtool
                 var sheet = m_Hssfworkbook.GetSheetAt(i);
                 if (!IsSheetNameValid(sheet))
                 {
-                    Console.WriteLine("skip sheet: " + sheet.SheetName);
+                    Console.WriteLine($"{Path.GetFileNameWithoutExtension(filePath)} skip sheet: {sheet.SheetName}");
                     continue;
                 }
                 sheets.Add(sheet);
@@ -168,7 +168,11 @@ namespace tabtool
             meta.TableName = Path.GetFileNameWithoutExtension(filename);
             for (int i = 1; i < dt.Columns.Count; i++)
             {
+                // TODO filter define
+                if (dt.Rows[0].ItemArray[i].ToString() == TabToolConfig.ExportFilter.k_NOT) continue;
+
                 TableField field = new TableField();
+                field.commits = dt.Rows[1].ItemArray[i].ToString();
                 field.fieldName = dt.Rows[2].ItemArray[i].ToString();
                 field.typeName = dt.Rows[3].ItemArray[i].ToString();
                 if (field.typeName == "int") { field.fieldType = ETableFieldType.Int; }
@@ -198,9 +202,14 @@ namespace tabtool
 
                 for (int i1 = 0; i1 < dt.Rows.Count; i1++)
                 {
-                    if (i1 == 0 || i1 == 1 || /*i == 2 ||*/ i1 == 3) continue;
+                    // key == not 直接跳过整个表 应该写在此方法外面
+                    //if (dt.Rows[0].ItemArray[1].ToString() == TabToolConfig.ExportFilter.k_NOT) break;
+
+                    if (i1 == 0 || i1 == 1 || /*i == 2 ||*/ i1 == 3) continue;//只保留名称
                     for (int j = 1; j < dt.Columns.Count; j++)
                     {
+                        // TODO filter define
+                        if (dt.Rows[0].ItemArray[j].ToString() == TabToolConfig.ExportFilter.k_NOT) continue;
                         if (j == dt.Columns.Count - 1)
                         {
                             sw.Write(dt.Rows[i1].ItemArray[j].ToString());

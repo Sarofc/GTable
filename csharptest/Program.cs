@@ -4,6 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
@@ -39,15 +40,19 @@ namespace csharptest
             //    }
             //    Console.WriteLine();
             //}
-
-            if (TableConfig.Instance.LoadTableConfig())
+            var time = new Stopwatch();
+            time.Start();
+            if (CfgachiveTable.Instance.Load())
             {
                 TbsachiveItem item = CfgachiveTable.Instance.GetTableItem(1);
                 if (item != null)
                 {
-                    Console.WriteLine(item.name);
+                    Console.WriteLine(item);
                 }
             }
+            time.Stop();
+            Console.WriteLine("Load huge table: " + time.ElapsedMilliseconds / 1000f);
+
             Console.ReadKey();
         }
     }
