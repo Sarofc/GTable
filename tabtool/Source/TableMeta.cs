@@ -2,7 +2,7 @@
 
 namespace tabtool
 {
-    enum ETableFieldType
+    enum ETableFieldType : byte
     {
         Int,
         Float,
@@ -10,7 +10,6 @@ namespace tabtool
         Struct,
         IntList,
         FloatList,
-        StringList,
         StructList,
     }
 
@@ -21,7 +20,7 @@ namespace tabtool
         public string typeName;
         public string commits;
 
-        public static string[] ts = { "int", "float", "string", "xxx", "List<int>", "List<float>", "List<string>", "xxx" };
+        public static string[] ts = { "int", "float", "string", "xxx", "List<int>", "List<float>", "xxx" };
 
         public string GetTypeNameOfStructList()
         {

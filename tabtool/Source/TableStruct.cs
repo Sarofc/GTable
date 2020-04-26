@@ -88,7 +88,7 @@ namespace tabtool
                         case "string": { field.fieldType = ETableFieldType.String; break; }
                         case "int+": { field.fieldType = ETableFieldType.IntList; break; }
                         case "float+": { field.fieldType = ETableFieldType.FloatList; break; }
-                        case "string+": { field.fieldType = ETableFieldType.StringList; break; }
+                        //case "string+": { field.fieldType = ETableFieldType.StringList; break; }
                         default:
                             Console.WriteLine("tbs文件错误：第{0}行", i);
                             return false;

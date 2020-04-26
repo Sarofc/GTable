@@ -16,44 +16,88 @@ namespace csharptest
 {
     class Program
     {
+        class Item
+        {
+            public int id;
+            public string value;
+            public List<int> test;
+        }
+
         static void Main(string[] args)
         {
-            //var path = @"O:\Git\Saro\tabtool\csharptest\config\achive.txt";
+            var path = @"O:\Git\Saro\MGFTemplate\tabtool\data\config\EN.txt";
 
-            //FileStream fs = new FileStream(path, FileMode.Open);
-            //BinaryFormatter bf = new BinaryFormatter();
-            //DataTable dt = bf.Deserialize(fs) as DataTable;
+            int version;
+            byte[] types;
 
-            //for (int i1 = 0; i1 < dt.Rows.Count; i1++)
-            //{
-            //    if (i1 == 0 || i1 == 1 || /*i == 2 ||*/ i1 == 3) continue;
-            //    for (int j = 1; j < dt.Columns.Count; j++)
-            //    {
-            //        if (j == dt.Columns.Count - 1)
-            //        {
-            //            Console.Write(dt.Rows[i1].ItemArray[j].ToString());
-            //        }
-            //        else
-            //        {
-            //            Console.Write(dt.Rows[i1].ItemArray[j].ToString() + "\t");
-            //        }
-            //    }
-            //    Console.WriteLine();
-            //}
-            var time = new Stopwatch();
-            time.Start();
-            if (CfgachiveTable.Instance.Load())
+            var list = new List<Item>();
+
+            using (var fs = new FileStream(path, FileMode.Open))
             {
-                TbsachiveItem item = CfgachiveTable.Instance.GetTableItem(1);
-                if (item != null)
+                var br = new BinaryReader(fs, Encoding.UTF8);
+                version = br.ReadInt32();//version
+                var typeCount = br.ReadInt32();
+                types = new byte[typeCount];
+                for (int i = 0; i < typeCount; i++)
                 {
-                    Console.WriteLine(item);
+                    types[i] = br.ReadByte();
+                }
+
+                var dataLen = br.ReadInt32();
+
+                for (int i = 0; i < dataLen; i++)
+                {
+                    var item = new Item();
+                    item.id = br.ReadInt32();
+                    item.value = br.ReadString();
+
+                    var testCount = br.ReadInt32();
+                    item.test = new List<int>(testCount);
+                    for (int i1 = 0; i1 < testCount; i1++)
+                    {
+                        item.test.Add(br.ReadInt32());
+                    }
+
+                    list.Add(item);
                 }
             }
-            time.Stop();
-            Console.WriteLine("Load huge table: " + time.ElapsedMilliseconds / 1000f);
+
+            var sb = new StringBuilder();
+            sb.Append(version).AppendLine();
+            foreach (var type in types)
+            {
+                sb.Append(type).Append("\t");
+            }
+            sb.AppendLine();
+            foreach (var item in list)
+            {
+                sb.Append(item.id).Append(": ").Append(item.value).
+                    Append(" | ").
+                    Append(string.Join(",", item.test)).
+                    AppendLine();
+            }
+
+            Console.WriteLine(sb.ToString());
 
             Console.ReadKey();
+        }
+
+        static void Test()
+        {
+            //var time = new Stopwatch();
+            //time.Start();
+            //if (CfgachiveTable.Instance.Load())
+            //{
+            //    TbsachiveItem item = CfgachiveTable.Instance.GetTableItem(1);
+            //    if (item != null)
+            //    {
+            //        Console.WriteLine(item);
+            //    }
+            //}
+            //time.Stop();
+            //Console.WriteLine("Load huge table: " + time.ElapsedMilliseconds / 1000f);
+
+            //Console.ReadKey();
         }
     }
 }

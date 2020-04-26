@@ -61,18 +61,21 @@ namespace tabtool
 
                 try
                 {
-                    var sheets = helper.ImportExcelFile(filepath);
+                    var sheets = helper.LoadExcelFile(filepath);
 
                     for (int i = 0; i < sheets.Count; i++)
                     {
                         string clientPath = clientOutDir + sheets[i].SheetName + ".txt";
                         //string serverPath = serverOutDir + sheets[i].SheetName + ".txt";
 
-                        var sb = new StringBuilder();
-                        var dt = helper.GetDataTable(sheets[i]);
-                        helper.WriteTxtAsset(dt, clientPath);
-                        //helper.WriteByteAsset(dt, clientPath);
-                        var meta = helper.GetTableMeta(clientPath, dt);
+                        var data = helper.ParseExcel(sheets[i]);
+
+                        Console.WriteLine(data.ToString());
+
+                        //helper.WriteTxtAsset(data, clientPath);
+                        helper.WriteByteAsset(data, clientPath);
+
+                        var meta = helper.GetTableMeta(clientPath, data);
                         clientTableMetaList.Add(meta);
                     }
                 }

@@ -9,6 +9,7 @@ namespace tabtool
 {
     class CodeGen
     {
+        // TODO 自定义数据类型
         public static void MakeCsharpFileTbs(List<TableMeta> metalist, string codepath)
         {
             string hfile = codepath + "TableStruct.cs";
@@ -105,8 +106,8 @@ namespace tabtool
                         sw.WriteLine("\t{");
                         sw.WriteLine("\t\tpublic override bool Load()");
                         sw.WriteLine("\t\t{");
-                        sw.WriteLine("\t\t\tTableReader tr = new TableReader();");
-                        sw.WriteLine("\t\t\tDataReader dr = new DataReader();");
+                        //sw.WriteLine("\t\t\tTableReader tr = new TableReader();");
+                        //sw.WriteLine("\t\t\tDataReader dr = new DataReader();");
                         sw.WriteLine("\t\t\tDataTable dt = tr.ReadFile(MyConfig.WorkDir+\"{0}.txt\");", meta.TableName);
                         sw.WriteLine();
                         sw.WriteLine("\t\t\tforeach(DataRow row in dt.Rows)");
@@ -132,9 +133,9 @@ namespace tabtool
                                 case ETableFieldType.FloatList:
                                     sw.WriteLine("\t\t\t\tdata.{0} = dr.GetFloatList(row[\"{0}\"].ToString());", field.fieldName);
                                     break;
-                                case ETableFieldType.StringList:
-                                    sw.WriteLine("\t\t\t\tdata.{0} = dr.GetStringList(row[\"{0}\"].ToString());", field.fieldName);
-                                    break;
+                                //case ETableFieldType.StringList:
+                                //    sw.WriteLine("\t\t\t\tdata.{0} = dr.GetStringList(row[\"{0}\"].ToString());", field.fieldName);
+                                //    break;
                                 case ETableFieldType.Struct:
                                     sw.WriteLine("\t\t\t\tdata.{0} = dr.GetObject<{1}>(row[\"{0}\"].ToString());", field.fieldName, field.GetCsharpTypeName());
                                     break;

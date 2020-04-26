@@ -33,7 +33,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\..\NewSoulsLike\tabtool\tools\</OutputPath>
+    <OutputPath>..\..\tools\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -80,6 +80,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Source\CmdlineHelper.cs" />
+    <Compile Include="Source\ExcelData.cs" />
     <Compile Include="Source\TableHelper.cs" />
     <Compile Include="Source\CodeGen.cs" />
     <Compile Include="ExportFieldDefine.cs" />

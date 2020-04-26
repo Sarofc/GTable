@@ -16,84 +16,130 @@ namespace tabtool
 {
     public class TableHelper
     {
+        internal void ParseFieldType(ExcelData data, object obj)
+        {
+            var typeName = obj.ToString();
+
+            if (typeName == "int")
+            {
+                data.fieldTypes.Add(ETableFieldType.Int);
+            }
+            else if (typeName == "float")
+            {
+                data.fieldTypes.Add(ETableFieldType.Float);
+            }
+            else if (typeName == "string")
+            {
+                data.fieldTypes.Add(ETableFieldType.String);
+            }
+            else if (typeName == "int+")
+            {
+                data.fieldTypes.Add(ETableFieldType.IntList);
+            }
+            else if (typeName == "float+")
+            {
+                data.fieldTypes.Add(ETableFieldType.FloatList);
+            }
+            else if (typeName[typeName.Length - 1] == '+')
+            {
+                data.fieldTypes.Add(ETableFieldType.StructList);
+            }
+            else
+            {
+                data.fieldTypes.Add(ETableFieldType.Struct);
+            }
+        }
+
         /// <summary>
-        /// 根据sheet，实例化DataTable
+        /// 解析Excel
         /// </summary>
         /// <param name="sheet"></param>
         /// <returns></returns>
-        internal DataTable GetDataTable(ISheet sheet, bool toBytes = false)
+        internal ExcelData ParseExcel(ISheet sheet)
         {
-            IEnumerator rows = sheet.GetRowEnumerator();
+            var defineRow = sheet.GetRow(0) as XSSFRow;
+            var commitRow = sheet.GetRow(1) as XSSFRow;
+            var nameRow = sheet.GetRow(2) as XSSFRow;
+            var typeRow = sheet.GetRow(3) as XSSFRow;
 
-            DataTable dt = new DataTable();
-            IRow typeRow = sheet.GetRow(2);
-            IRow nameRow = sheet.GetRow(3);
-            for (int j = nameRow.FirstCellNum; j < (nameRow.LastCellNum); j++)
+            var data = new ExcelData();
+            var colCount = nameRow.LastCellNum - 1;
+            data.defines = new List<string>(colCount);
+            data.fieldCommits = new List<string>(colCount);
+            data.fieldNames = new List<string>(colCount);
+            data.fieldTypeNames = new List<string>(colCount);
+            data.fieldTypes = new List<ETableFieldType>(colCount);
+
+            // 以name为基准
+            int cellNum = nameRow.LastCellNum;
+            for (int i = 1; i < nameRow.LastCellNum; i++)
             {
-                dt.Columns.Add(j.ToString());
+                var cell = nameRow.GetCell(i);
+                if (cell != null && !string.IsNullOrEmpty(cell.ToString()))
+                {
+                    data.fieldNames.Add(cell.ToString());
+                }
+                else
+                {
+                    cellNum = i;
+                    Console.WriteLine($"Sheet {sheet.SheetName} cell is null at: [row: {2},col: {i}]");
+                    break;
+                }
+
+                cell = defineRow.GetCell(i);
+                if (cell != null)
+                    data.defines.Add(cell.ToString());
+                else
+                    Console.WriteLine($"Sheet {sheet.SheetName} cell is null at: [row: {0},col: {i}]");
+
+                cell = commitRow.GetCell(i);
+                if (cell != null)
+                    data.fieldCommits.Add(cell.ToString());
+                else
+                    Console.WriteLine($"Sheet {sheet.SheetName} cell is null at: [row: {1},col: {i}]");
+
+                cell = typeRow.GetCell(i);
+                if (cell != null)
+                {
+                    ParseFieldType(data, cell.ToString());
+                    data.fieldTypeNames.Add(cell.ToString());
+                }
+                else
+                    Console.WriteLine($"Sheet {sheet.SheetName} cell is null at: [row: {3},col: {i}]");
+
             }
 
-            var dataReader = new DataReader();
-
-            while (rows.MoveNext())
+            data.value = new List<List<string>>(sheet.LastRowNum - 4);
+            for (int i = 4; i <= sheet.LastRowNum; i++)
             {
-                IRow row = (XSSFRow)rows.Current;
-                DataRow dr = dt.NewRow();
-
-                for (int i = 0; i < row.LastCellNum; i++)
+                var row = sheet.GetRow(i) as XSSFRow;
+                var keyCell = row.GetCell(1);
+                if ((keyCell == null || string.IsNullOrEmpty(keyCell.ToString())))
                 {
-                    ICell cell = row.GetCell(i);
+                    Console.WriteLine("key is null or empty. break.");
+                    break;
+                }
+
+                data.value.Add(new List<string>(cellNum));
+
+                for (int j = 1; j < cellNum; j++)
+                {
+                    var cell = row.GetCell(j);
+
                     if (cell == null)
                     {
-                        dr[i] = null;
+                        data.value[i - 4].Add(string.Empty);
+                        Console.WriteLine($"Sheet {sheet.SheetName} cell is null at: [row: {i},col: {j}]");
+
                     }
                     else
                     {
-                        if (toBytes)
-                        {
-                            var typeName = typeRow.GetCell(i).ToString();
-                            if (typeName == "int")
-                            {
-                                dr[i] = dataReader.GetInt(cell.ToString());
-                            }
-                            else if (typeName == "float")
-                            {
-                                dr[i] = dataReader.GetFloat(cell.ToString());
-                            }
-                            else if (typeName == "string")
-                            {
-                                dr[i] = cell.ToString();
-                            }
-                            else if (typeName == "int+")
-                            {
-                                dr[i] = dataReader.GetIntList(cell.ToString());
-                            }
-                            else if (typeName == "float+")
-                            {
-                                dr[i] = dataReader.GetFloatList(cell.ToString());
-                            }
-                            //else if (typeRow.GetCell(i).ToString() == "string+")
-                            //{
-                            //    dr[i] = dataReader.GetStringList(cell.ToString());
-                            //}
-                            else if (typeName[typeName.Length - 1] == '+')
-                            {
-                                dr[i] = cell.ToString();//dataReader.GetObject(cell.ToString(), Type.GetType(typeName));
-                            }
-                            else
-                            {
-                                dr[i] = cell.ToString(); //dataReader.GetObjectList(cell.ToString(), Type.GetType(typeName));
-                            }
-                        }
-                        else
-                        {
-                            dr[i] = cell.ToString();
-                        }
+                        data.value[i - 4].Add(cell.ToString());
                     }
                 }
-                dt.Rows.Add(dr);
             }
-            return dt;
+
+            return data;
         }
 
         /// <summary>
@@ -101,7 +147,7 @@ namespace tabtool
         /// </summary>
         /// <param name="filePath"></param>
         /// <returns></returns>
-        internal List<ISheet> ImportExcelFile(string filePath)
+        internal List<ISheet> LoadExcelFile(string filePath)
         {
             IWorkbook m_Hssfworkbook;
 
@@ -150,6 +196,11 @@ namespace tabtool
                     }
                 }
 
+                if (sheet.SheetName.StartsWith("~"))
+                {
+                    return false;
+                }
+
                 return true;
             }
 
@@ -160,27 +211,26 @@ namespace tabtool
         /// 获取 TableMeta
         /// </summary>
         /// <param name="filename"></param>
-        /// <param name="dt"></param>
+        /// <param name="data"></param>
         /// <returns></returns>
-        internal TableMeta GetTableMeta(string filename, DataTable dt)
+        internal TableMeta GetTableMeta(string filename, ExcelData data)
         {
             TableMeta meta = new TableMeta();
             meta.TableName = Path.GetFileNameWithoutExtension(filename);
-            for (int i = 1; i < dt.Columns.Count; i++)
+            for (int i = 1; i < data.fieldNames.Count; i++)
             {
                 // TODO filter define
-                if (dt.Rows[0].ItemArray[i].ToString() == TabToolConfig.ExportFilter.k_NOT) continue;
+                if (data.defines[i] == TabToolConfig.ExportFilter.k_NOT) continue;
 
                 TableField field = new TableField();
-                field.commits = dt.Rows[1].ItemArray[i].ToString();
-                field.fieldName = dt.Rows[2].ItemArray[i].ToString();
-                field.typeName = dt.Rows[3].ItemArray[i].ToString();
+                field.commits = data.fieldCommits[i];
+                field.fieldName = data.fieldNames[i];
+                field.typeName = data.fieldTypeNames[i];
                 if (field.typeName == "int") { field.fieldType = ETableFieldType.Int; }
                 else if (field.typeName == "float") { field.fieldType = ETableFieldType.Float; }
                 else if (field.typeName == "string") { field.fieldType = ETableFieldType.String; }
                 else if (field.typeName == "int+") { field.fieldType = ETableFieldType.IntList; }
                 else if (field.typeName == "float+") { field.fieldType = ETableFieldType.FloatList; }
-                else if (field.typeName == "string+") { field.fieldType = ETableFieldType.StringList; }
                 else if (field.typeName[field.typeName.Length - 1] == '+') { field.fieldType = ETableFieldType.StructList; }
                 else { field.fieldType = ETableFieldType.Struct; }
                 meta.Fields.Add(field);
@@ -192,31 +242,28 @@ namespace tabtool
         /// <summary>
         /// 写入txt
         /// </summary>
-        /// <param name="dt"></param>
+        /// <param name="data"></param>
         /// <param name="path"></param>
-        internal void WriteTxtAsset(DataTable dt, string path)
+        internal void WriteTxtAsset(ExcelData data, string path)
         {
             using (FileStream fs = new FileStream(path, FileMode.Create, FileAccess.Write))
             {
                 StreamWriter sw = new StreamWriter(fs, Encoding.UTF8);
 
-                for (int i1 = 0; i1 < dt.Rows.Count; i1++)
+                for (int i = 0; i < data.value.Count; i++)
                 {
-                    // key == not 直接跳过整个表 应该写在此方法外面
-                    //if (dt.Rows[0].ItemArray[1].ToString() == TabToolConfig.ExportFilter.k_NOT) break;
-
-                    if (i1 == 0 || i1 == 1 || /*i == 2 ||*/ i1 == 3) continue;//只保留名称
-                    for (int j = 1; j < dt.Columns.Count; j++)
+                    var line = data.value[i];
+                    for (int j = 0; j < line.Count; j++)
                     {
                         // TODO filter define
-                        if (dt.Rows[0].ItemArray[j].ToString() == TabToolConfig.ExportFilter.k_NOT) continue;
-                        if (j == dt.Columns.Count - 1)
+                        if (data.defines[j] == TabToolConfig.ExportFilter.k_NOT) continue;
+                        if (j == line.Count - 1)
                         {
-                            sw.Write(dt.Rows[i1].ItemArray[j].ToString());
+                            sw.Write(line[j]);
                         }
                         else
                         {
-                            sw.Write(dt.Rows[i1].ItemArray[j].ToString() + "\t");
+                            sw.Write(line[j] + "\t");
                         }
                     }
                     sw.WriteLine();
@@ -225,25 +272,86 @@ namespace tabtool
             }
         }
 
+        //TODO
         /// <summary>
         /// 写入bytes
         /// </summary>
         /// <param name="dt"></param>
         /// <param name="path"></param>
-        internal void WriteByteAsset(DataTable dt, string path)
+        internal void WriteByteAsset(ExcelData data, string path)
         {
-            byte[] binaryDataResult = null;
-            using (MemoryStream memStream = new MemoryStream())
+            using (FileStream fs = new FileStream(path, FileMode.Create, FileAccess.Write))
             {
-                BinaryFormatter brFormatter = new BinaryFormatter();
-                dt.RemotingFormat = SerializationFormat.Binary;
-                brFormatter.Serialize(memStream, dt);
-                binaryDataResult = memStream.ToArray();
+                BinaryWriter sw = new BinaryWriter(fs, Encoding.UTF8);
+
+                sw.Write(ExcelData.k_DataVersion);
+                var typeList = new List<byte>();
+                for (int i = 0; i < data.fieldTypes.Count; i++)
+                {
+                    if (data.defines[i] == TabToolConfig.ExportFilter.k_NOT)
+                        continue;
+                    typeList.Add((byte)data.fieldTypes[i]);
+                }
+
+                sw.Write(typeList.Count);
+                for (int i = 0; i < typeList.Count; i++)
+                {
+                    sw.Write(typeList[i]);
+                }
+
+                sw.Write(data.value.Count);//数据长度
+
+                for (int i = 0; i < data.value.Count; i++)
+                {
+                    var line = data.value[i];
+                    for (int j = 0; j < line.Count; j++)
+                    {
+                        // TODO filter define
+                        if (data.defines[j] == TabToolConfig.ExportFilter.k_NOT) continue;
+
+                        switch (data.fieldTypes[j])
+                        {
+                            case ETableFieldType.Int:
+                                int.TryParse(line[j], out int iv);
+                                sw.Write(iv);
+                                break;
+                            case ETableFieldType.Float:
+                                float.TryParse(line[j], out float fv);
+                                sw.Write(fv);
+                                break;
+                            case ETableFieldType.String:
+                                sw.Write(line[j]);
+                                break;
+                            case ETableFieldType.IntList:
+                                var ivs = line[j].Split(',');
+                                sw.Write(ivs.Length);//长度
+                                for (int i1 = 0; i1 < ivs.Length; i1++)
+                                {
+                                    int.TryParse(ivs[i1], out int ivl);
+                                    sw.Write(ivl);
+                                }
+                                break;
+                            case ETableFieldType.FloatList:
+                                var fvs = line[j].Split(',');
+                                sw.Write(fvs.Length);//长度
+                                for (int i1 = 0; i1 < fvs.Length; i1++)
+                                {
+                                    float.TryParse(fvs[i1], out float fvl);
+                                    sw.Write(fvl);
+                                }
+                                break;
+                            //case ETableFieldType.Struct:
+                            //    break;
+                            //case ETableFieldType.StructList:
+                            //    break;
+                            default:
+                                break;
+                        }
+                    }
+                }
+                sw.Close();
             }
-
-            File.WriteAllBytes(path, binaryDataResult);
         }
-
     }
 
     //表字段读取
