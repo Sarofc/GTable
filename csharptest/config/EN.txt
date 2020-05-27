@@ -1,3 +1,0 @@
-﻿id	origin	text
-1001	开始	Start
-1002	结束	End

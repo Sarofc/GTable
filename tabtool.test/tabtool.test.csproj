@@ -4,10 +4,10 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{3EA4F69F-A3E7-439C-BBE1-741D4899B923}</ProjectGuid>
+    <ProjectGuid>{003899E1-4651-4E64-964B-AF1BB8A9EDF8}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>tabtool</RootNamespace>
-    <AssemblyName>tabtool</AssemblyName>
+    <RootNamespace>tabtool.test</RootNamespace>
+    <AssemblyName>tabtool.test</AssemblyName>
     <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -33,24 +33,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ICSharpCode.SharpZipLib, Version=0.86.0.518, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
-      <HintPath>..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
-    </Reference>
-    <Reference Include="NPOI, Version=2.3.0.0, Culture=neutral, PublicKeyToken=0df73ec7942b34e1, processorArchitecture=MSIL">
-      <HintPath>..\packages\NPOI.2.3.0\lib\net40\NPOI.dll</HintPath>
-    </Reference>
-    <Reference Include="NPOI.OOXML, Version=2.3.0.0, Culture=neutral, PublicKeyToken=0df73ec7942b34e1, processorArchitecture=MSIL">
-      <HintPath>..\packages\NPOI.2.3.0\lib\net40\NPOI.OOXML.dll</HintPath>
-    </Reference>
-    <Reference Include="NPOI.OpenXml4Net, Version=2.3.0.0, Culture=neutral, PublicKeyToken=0df73ec7942b34e1, processorArchitecture=MSIL">
-      <HintPath>..\packages\NPOI.2.3.0\lib\net40\NPOI.OpenXml4Net.dll</HintPath>
-    </Reference>
-    <Reference Include="NPOI.OpenXmlFormats, Version=2.3.0.0, Culture=neutral, PublicKeyToken=0df73ec7942b34e1, processorArchitecture=MSIL">
-      <HintPath>..\packages\NPOI.2.3.0\lib\net40\NPOI.OpenXmlFormats.dll</HintPath>
-    </Reference>
-    <Reference Include="NPOI.ScratchPad.HWPF, Version=1.3.0.0, Culture=neutral, PublicKeyToken=0df73ec7942b34e1, processorArchitecture=MSIL">
-      <HintPath>..\packages\NPOI.HWPF.2.3.0\lib\net40\NPOI.ScratchPad.HWPF.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -62,18 +44,22 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="src\CmdlineHelper.cs" />
-    <Compile Include="src\CodeGen.cs" />
-    <Compile Include="src\ExcelData.cs" />
-    <Compile Include="src\ExportFieldDefine.cs" />
-    <Compile Include="src\Program.cs" />
-    <Compile Include="src\TableHelper.cs" />
-    <Compile Include="src\TableMeta.cs" />
-    <Compile Include="src\TableStruct.cs" />
+    <Compile Include="test\configTableCfg.cs" />
+    <Compile Include="test\configTableStruct.cs" />
+    <Compile Include="test\Program.cs" />
+    <Compile Include="test\TableCfg.cs" />
+    <Compile Include="test\TableStruct.cs" />
+    <Compile Include="test\tabtool\MyConfig.cs" />
+    <Compile Include="test\tabtool\ReadTable.cs" />
+    <Compile Include="test\tabtool\SingletonTable.cs" />
+    <Compile Include="test\tabtool\TableManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="packages.config" />
+    <None Include="test\csharptest.csproj" />
+    <None Include="test\excel\Item.xlsx" />
+    <None Include="test\excel\meta.tbs" />
+    <None Include="test\一键导表.bat" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
