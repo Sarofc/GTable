@@ -12,72 +12,51 @@ using System.Text;
 using System.Threading.Tasks;
 using tabtool;
 
-namespace csharptest
+namespace tabtool
 {
     class Program
     {
+        public enum ETableFieldType : byte
+        {
+            Byte,
+            Int,
+            Long,
+            Float,
+            String,
+            Struct,// TODO
+            ByteList,
+            IntList,
+            LongList,
+            FloatList,
+            StructList,// TODO
+        }
+
         class Item
         {
             public int id;
             public string value;
-            public List<int> test;
         }
 
         static void Main(string[] args)
         {
-            var path = @"O:\Git\Saro\MGFTemplate\tabtool\data\config\EN.txt";
+            TableCfg.s_TableSrc = @"O:\Git\Saro\tabtool\tabtool.test\config\";
 
-            int version;
-            byte[] types;
-
-            var list = new List<Item>();
-
-            using (var fs = new FileStream(path, FileMode.Open))
+            TableCfg.s_BytesLoader = path =>
             {
-                var br = new BinaryReader(fs, Encoding.UTF8);
-                version = br.ReadInt32();//version
-                var typeCount = br.ReadInt32();
-                types = new byte[typeCount];
-                for (int i = 0; i < typeCount; i++)
+                using (var fs = new FileStream(path, FileMode.Open))
                 {
-                    types[i] = br.ReadByte();
+                    var data = new byte[fs.Length];
+                    fs.Read(data, 0, data.Length);
+                    return data;
                 }
+            };
 
-                var dataLen = br.ReadInt32();
+            CfgITEMTable.Get().Load();
 
-                for (int i = 0; i < dataLen; i++)
-                {
-                    var item = new Item();
-                    item.id = br.ReadInt32();
-                    item.value = br.ReadString();
+            Console.WriteLine(CfgITEMTable.Get().ToString());
+            Console.WriteLine(CfgITEMTable.Get().GetTableItem(1).name);
 
-                    var testCount = br.ReadInt32();
-                    item.test = new List<int>(testCount);
-                    for (int i1 = 0; i1 < testCount; i1++)
-                    {
-                        item.test.Add(br.ReadInt32());
-                    }
-
-                    list.Add(item);
-                }
-            }
-
-            var sb = new StringBuilder();
-            sb.Append(version).AppendLine();
-            foreach (var type in types)
-            {
-                sb.Append(type).Append("\t");
-            }
-            sb.AppendLine();
-            foreach (var item in list)
-            {
-                sb.Append(item.id).Append(": ").Append(item.value).
-                    Append(" | ").
-                    Append(string.Join(",", item.test)).
-                    AppendLine();
-            }
-
-            Console.WriteLine(sb.ToString());
+            CfgITEMTable.Get().Unload();
 
             Console.ReadKey();
         }

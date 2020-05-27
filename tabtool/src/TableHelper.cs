@@ -20,9 +20,17 @@ namespace tabtool
         {
             var typeName = obj.ToString();
 
-            if (typeName == "int")
+            if (typeName == "byte")
+            {
+                data.fieldType = (ETableFieldType.Byte);
+            }
+            else if (typeName == "int")
             {
                 data.fieldType = (ETableFieldType.Int);
+            }
+            else if (typeName == "long")
+            {
+                data.fieldType = (ETableFieldType.Long);
             }
             else if (typeName == "float")
             {
@@ -32,9 +40,17 @@ namespace tabtool
             {
                 data.fieldType = (ETableFieldType.String);
             }
+            else if (typeName == "byte+")
+            {
+                data.fieldType = (ETableFieldType.ByteList);
+            }
             else if (typeName == "int+")
             {
                 data.fieldType = (ETableFieldType.IntList);
+            }
+            else if (typeName == "long+")
+            {
+                data.fieldType = (ETableFieldType.LongList);
             }
             else if (typeName == "float+")
             {
@@ -63,7 +79,8 @@ namespace tabtool
             var nameRow = sheet.GetRow(3) as XSSFRow;
 
             var data = new ExcelData();
-            var colCount = nameRow.LastCellNum - 1;
+            data.tablName = sheet.SheetName;
+            var colCount = nameRow.LastCellNum - 2;
 
             data.header = new List<ExcelData.Header>(colCount);
             for (int i = 0; i < colCount; i++)
@@ -73,40 +90,40 @@ namespace tabtool
 
             // 以name为基准
             int cellNum = nameRow.LastCellNum;
-            for (int i = 0; i < nameRow.LastCellNum; i++)
+            for (int i = 1; i < nameRow.LastCellNum; i++)
             {
                 var cell = nameRow.GetCell(i);
                 if (cell != null && !string.IsNullOrEmpty(cell.ToString()))
                 {
-                    data.header[i].fieldName = (cell.ToString());
+                    data.header[i - 1].fieldName = (cell.ToString());
                 }
                 else
                 {
-                    cellNum = i;
-                    Console.WriteLine($"Sheet {sheet.SheetName} cell is null at: [{2}{ConvertIntToLetter(i)}]");
+                    cellNum = i - 1;
+                    Console.WriteLine($"Sheet [{sheet.SheetName}] cell is null at: [{3}{ConvertIntToOrderedLetter(i)}]");
                     break;
                 }
 
                 cell = defineRow.GetCell(i);
                 if (cell != null)
-                    data.header[i].define = (cell.ToString());
+                    data.header[i - 1].define = (cell.ToString());
                 else
-                    Console.WriteLine($"Sheet {sheet.SheetName} cell is null at: [{0}{ConvertIntToLetter(i)}]");
+                    Console.WriteLine($"Sheet [{sheet.SheetName}] cell is null at: [{0}{ConvertIntToOrderedLetter(i)}]");
 
                 cell = commentRow.GetCell(i);
                 if (cell != null)
-                    data.header[i].fieldComment = (cell.ToString());
+                    data.header[i - 1].fieldComment = (cell.ToString());
                 else
-                    Console.WriteLine($"Sheet {sheet.SheetName} cell is null at: [{0}{ConvertIntToLetter(i)}]");
+                    Console.WriteLine($"Sheet [{sheet.SheetName}] cell is null at: [{1}{ConvertIntToOrderedLetter(i)}]");
 
                 cell = typeRow.GetCell(i);
                 if (cell != null)
                 {
-                    ParseFieldType(data.header[i], cell.ToString());
-                    data.header[i].fieldTypeName = (cell.ToString());
+                    ParseFieldType(data.header[i - 1], cell.ToString());
+                    data.header[i - 1].fieldTypeName = (cell.ToString());
                 }
                 else
-                    Console.WriteLine($"Sheet {sheet.SheetName} cell is null at: [{0}{ConvertIntToLetter(i)}]");
+                    Console.WriteLine($"Sheet [{sheet.SheetName}] cell is null at: [{2}{ConvertIntToOrderedLetter(i)}]");
             }
 
             while (data.header.Count > cellNum)
@@ -121,20 +138,20 @@ namespace tabtool
                 var keyCell = row.GetCell(1);
                 if ((keyCell == null || string.IsNullOrEmpty(keyCell.ToString())))
                 {
-                    Console.WriteLine("key is null or empty. break.");
+                    Console.WriteLine($"key [{i}B] is null or empty. break.");
                     break;
                 }
 
                 data.rowValues.Add(new List<string>(cellNum));
 
-                for (int j = 1; j < cellNum; j++)
+                for (int j = 1; j <= cellNum; j++)
                 {
                     var cell = row.GetCell(j);
 
                     if (cell == null)
                     {
                         data.rowValues[i - 4].Add(string.Empty);
-                        Console.WriteLine($"Sheet {sheet.SheetName} cell is null at: [{0}{ConvertIntToLetter(i)}]");
+                        Console.WriteLine($"Sheet [{sheet.SheetName}] cell is null at: [{0}{ConvertIntToOrderedLetter(i)}]");
 
                     }
                     else
@@ -277,7 +294,6 @@ namespace tabtool
             }
         }
 
-        //TODO
         /// <summary>
         /// 写入bytes
         /// </summary>
@@ -289,14 +305,14 @@ namespace tabtool
             {
                 BinaryWriter sw = new BinaryWriter(fs, Encoding.UTF8);
 
-                //sw.Write(ExcelData.k_DataVersion);
+                sw.Write(ExcelData.k_DataVersion);
                 //var typeList = new List<byte>();
-                //for (int i = 0; i < data.fieldTypes.Count; i++)
-                //{
-                //    if (data.defines[i] == TabToolConfig.ExportFilter.k_NOT)
-                //        continue;
-                //    typeList.Add((byte)data.fieldTypes[i]);
-                //}
+                for (int i = 0; i < data.header.Count; i++)
+                {
+                    if (data.header[i].define == TabToolConfig.ExportFilter.k_NOT)
+                        continue;
+                    //typeList.Add((byte)data.header[i].fieldType);
+                }
 
                 //sw.Write(typeList.Count);
                 //for (int i = 0; i < typeList.Count; i++)
@@ -304,69 +320,109 @@ namespace tabtool
                 //    sw.Write(typeList[i]);
                 //}
 
-                //sw.Write(data.value.Count);//数据长度
+                sw.Write(data.rowValues.Count);//数据长度
 
-                //for (int i = 0; i < data.value.Count; i++)
-                //{
-                //    var line = data.value[i];
-                //    for (int j = 0; j < line.Count; j++)
-                //    {
-                //        // TODO filter define
-                //        if (data.defines[j] == TabToolConfig.ExportFilter.k_NOT) continue;
+                for (int i = 0; i < data.rowValues.Count; i++)
+                {
+                    var line = data.rowValues[i];
+                    for (int j = 0; j < line.Count; j++)
+                    {
+                        // TODO filter define
+                        if (data.header[j].define == TabToolConfig.ExportFilter.k_NOT) continue;
 
-                //        switch (data.fieldTypes[j])
-                //        {
-                //            case ETableFieldType.Int:
-                //                int.TryParse(line[j], out int iv);
-                //                sw.Write(iv);
-                //                break;
-                //            case ETableFieldType.Float:
-                //                float.TryParse(line[j], out float fv);
-                //                sw.Write(fv);
-                //                break;
-                //            case ETableFieldType.String:
-                //                sw.Write(line[j]);
-                //                break;
-                //            case ETableFieldType.IntList:
-                //                var ivs = line[j].Split(',');
-                //                sw.Write(ivs.Length);//长度
-                //                for (int i1 = 0; i1 < ivs.Length; i1++)
-                //                {
-                //                    int.TryParse(ivs[i1], out int ivl);
-                //                    sw.Write(ivl);
-                //                }
-                //                break;
-                //            case ETableFieldType.FloatList:
-                //                var fvs = line[j].Split(',');
-                //                sw.Write(fvs.Length);//长度
-                //                for (int i1 = 0; i1 < fvs.Length; i1++)
-                //                {
-                //                    float.TryParse(fvs[i1], out float fvl);
-                //                    sw.Write(fvl);
-                //                }
-                //                break;
-                //            //case ETableFieldType.Struct:
-                //            //    break;
-                //            //case ETableFieldType.StructList:
-                //            //    break;
-                //            default:
-                //                break;
-                //        }
-                //    }
-                //}
+                        switch (data.header[j].fieldType)
+                        {
+                            case ETableFieldType.Byte:
+                                byte.TryParse(line[j], out byte bv);
+                                sw.Write(bv);
+                                break;
+                            case ETableFieldType.Int:
+                                int.TryParse(line[j], out int iv);
+                                sw.Write(iv);
+                                break;
+                            case ETableFieldType.Long:
+                                long.TryParse(line[j], out long lv);
+                                sw.Write(lv);
+                                break;
+                            case ETableFieldType.Float:
+                                float.TryParse(line[j], out float fv);
+                                sw.Write(fv);
+                                break;
+                            case ETableFieldType.String:
+                                sw.Write(line[j]);
+                                break;
+                            case ETableFieldType.ByteList:
+                                var bvs = line[j].Split(',');
+                                sw.Write(bvs.Length);//长度
+                                for (int i1 = 0; i1 < bvs.Length; i1++)
+                                {
+                                    byte.TryParse(bvs[i1].Trim(), out byte bvl);
+                                    sw.Write(bvl);
+                                }
+                                break;
+                            case ETableFieldType.IntList:
+                                var ivs = line[j].Split(',');
+                                sw.Write(ivs.Length);//长度
+                                for (int i1 = 0; i1 < ivs.Length; i1++)
+                                {
+                                    int.TryParse(ivs[i1].Trim(), out int ivl);
+                                    sw.Write(ivl);
+                                }
+                                break;
+                            case ETableFieldType.LongList:
+                                var lvs = line[j].Split(',');
+                                sw.Write(lvs.Length);//长度
+                                for (int i1 = 0; i1 < lvs.Length; i1++)
+                                {
+                                    long.TryParse(lvs[i1].Trim(), out long lvl);
+                                    sw.Write(lvl);
+                                }
+                                break;
+                            case ETableFieldType.FloatList:
+                                var fvs = line[j].Split(',');
+                                sw.Write(fvs.Length);//长度
+                                for (int i1 = 0; i1 < fvs.Length; i1++)
+                                {
+                                    float.TryParse(fvs[i1].Trim(), out float fvl);
+                                    sw.Write(fvl);
+                                }
+                                break;
+                            //case ETableFieldType.Struct:
+                            //    break;
+                            //case ETableFieldType.StructList:
+                            //    break;
+                            default:
+                                break;
+                        }
+                    }
+                }
                 sw.Close();
             }
         }
 
-        public string ConvertIntToLetter(int value)
+        // A-Z AA-AZ BA-BZ etc.
+        public string ConvertIntToOrderedLetter(int value)
         {
-            var count = value / 26;
-            var res = value % 26;
-            
-            if (count > 0)
-                return $"{((char)(count + 64))}{((char)(res + 65))}";
+            var div = value / 26;
+            var mod = value % 26;
+
+            if (div > 0)
+                return $"{((char)(div + 64))}{((char)(mod + 65))}";
             else
-                return $"{((char)(res + 65))}";
+                return $"{((char)(mod + 65))}";
         }
+
+        internal static Dictionary<ETableFieldType, Type> s_TypeLut = new Dictionary<ETableFieldType, Type>
+        {
+            {ETableFieldType.Byte, typeof(byte) },
+            {ETableFieldType.Int, typeof(int) },
+            {ETableFieldType.Long, typeof(long) },
+            {ETableFieldType.Float, typeof(float) },
+            {ETableFieldType.ByteList, typeof(List<byte>) },
+            {ETableFieldType.IntList, typeof(List<int>) },
+            {ETableFieldType.LongList, typeof(List<long>) },
+            {ETableFieldType.FloatList  , typeof(List<float>) },
+            {ETableFieldType.String, typeof(string) },
+        };
     }
 }

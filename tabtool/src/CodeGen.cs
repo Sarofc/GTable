@@ -4,6 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using System.CodeDom;
+using Microsoft.CSharp;
+using System.CodeDom.Compiler;
 
 namespace tabtool
 {
@@ -73,7 +76,7 @@ namespace tabtool
         //    }
         //}
 
-        //public static void MakeCsharpFile(List<TableMeta> metalist, string codepath)
+        //public static void MakeCsharpFile(List<ExcelData> excelDatas, string codepath)
         //{
         //    string csfile = codepath + "TableCfg.cs";
         //    using (FileStream fs = new FileStream(csfile, FileMode.Create, FileAccess.Write))
@@ -85,191 +88,290 @@ namespace tabtool
         //            sw.WriteLine();
         //            sw.WriteLine("using System.Collections;");
         //            sw.WriteLine("using System.Collections.Generic;");
-        //            sw.WriteLine("using System.Data;");
+        //            sw.WriteLine("using System.IO;");
+        //            sw.WriteLine("using System.Text;");
         //            sw.WriteLine();
         //            sw.WriteLine("namespace tabtool");
         //            sw.WriteLine("{");
-        //            foreach (var meta in metalist)
+        //            for (int i = 0; i < excelDatas.Count; i++)
         //            {
+        //                var meta = excelDatas[i];
         //                sw.WriteLine();
         //                sw.WriteLine("\tpublic class {0}", meta.GetItemName());
         //                sw.WriteLine("\t{");
-        //                foreach (var field in meta.Fields)
+
+        //                foreach (var colData in meta.header)
         //                {
-        //                    sw.WriteLine("\t\t/// <summary>\n\t\t/// {0} \n\t\t/// </summary>", field.commits);
-        //                    sw.WriteLine("\t\tpublic {0} {1};", field.GetCsharpTypeName(), field.fieldName);
+        //                    sw.WriteLine("\t\t/// <summary>\n\t\t/// {0} \n\t\t/// </summary>", colData.fieldComment);
+        //                    sw.WriteLine("\t\tpublic {0} {1};", colData.fieldTypeName, colData.fieldName);
         //                }
+
         //                sw.WriteLine("\t}");
         //                sw.WriteLine();
-        //                sw.WriteLine("\tpublic class {0} : TableManager<{1}, {0}>", meta.GetClassName(), meta.GetItemName());
+        //                sw.WriteLine("\tpublic class {0} : TableBase<{1}, {0}>", meta.GetClassName(), meta.GetItemName());
         //                sw.WriteLine("\t{");
+        //                // load method
         //                sw.WriteLine("\t\tpublic override bool Load()");
         //                sw.WriteLine("\t\t{");
-        //                //sw.WriteLine("\t\t\tTableReader tr = new TableReader();");
-        //                //sw.WriteLine("\t\t\tDataReader dr = new DataReader();");
-        //                sw.WriteLine("\t\t\tDataTable dt = tr.ReadFile(MyConfig.WorkDir+\"{0}.txt\");", meta.TableName);
+        //                sw.WriteLine("\t\t\tvar bytes = GetBytes(\"{0}.txt\");", meta.tablName);
         //                sw.WriteLine();
-        //                sw.WriteLine("\t\t\tforeach(DataRow row in dt.Rows)");
+        //                sw.WriteLine("\t\t\tusing (var ms = new MemoryStream(bytes))");
         //                sw.WriteLine("\t\t\t{");
-        //                sw.WriteLine("\t\t\t\tvar data = new {0}();", meta.GetItemName());
-
-        //                foreach (var field in meta.Fields)
+        //                sw.WriteLine("\t\t\t\tusing (var br = new BinaryReader(ms))");
+        //                sw.WriteLine("\t\t\t\t{");
+        //                sw.WriteLine("\t\t\t\t\tvar version = br.ReadInt32();//version");
+        //                sw.WriteLine("\t\t\t\t\tvar dataLen = br.ReadInt32();");
+        //                sw.WriteLine("\t\t\t\t\tfor (int i = 0; i < dataLen; i++)");
+        //                sw.WriteLine("\t\t\t\t\t{");
+        //                sw.WriteLine("\t\t\t\t\t\tvar data = new {0}();", meta.GetItemName());
+        //                foreach (var header in meta.header)
         //                {
-        //                    switch (field.fieldType)
+        //                    switch (header.fieldType)
         //                    {
+        //                        case ETableFieldType.Byte:
+        //                            sw.WriteLine("\t\t\t\t\t\tdata.{0} = br.ReadByte();", header.fieldName);
+        //                            break;
         //                        case ETableFieldType.Int:
-        //                            sw.WriteLine("\t\t\t\tdata.{0} = dr.GetInt(row[\"{0}\"].ToString());", field.fieldName);
+        //                            sw.WriteLine("\t\t\t\t\t\tdata.{0} = br.ReadInt32();", header.fieldName);
+        //                            break;
+        //                        case ETableFieldType.Long:
+        //                            sw.WriteLine("\t\t\t\t\t\tdata.{0} = br.ReadInt64();", header.fieldName);
         //                            break;
         //                        case ETableFieldType.Float:
-        //                            sw.WriteLine("\t\t\t\tdata.{0} = dr.GetFloat(row[\"{0}\"].ToString());", field.fieldName);
+        //                            sw.WriteLine("\t\t\t\t\t\tdata.{0} = br.ReadSingle();", header.fieldName);
         //                            break;
         //                        case ETableFieldType.String:
-        //                            sw.WriteLine("\t\t\t\tdata.{0} = (row[\"{0}\"].ToString());", field.fieldName);
+        //                            sw.WriteLine("\t\t\t\t\t\tdata.{0} = br.ReadString();", header.fieldName);
+        //                            break;
+        //                        case ETableFieldType.ByteList:
+        //                            sw.WriteLine("\t\t\t\t\t\tvar len = br.ReadInt32();");
+        //                            sw.WriteLine("\t\t\t\t\t\tdata.{0} = new List<byte>(len);", header.fieldName);
+        //                            sw.WriteLine("\t\t\t\t\t\tfor (int j = 0; j < len; j++)");
+        //                            sw.WriteLine("\t\t\t\t\t\t{");
+        //                            sw.WriteLine("\t\t\t\t\t\t\tdata.{0}.Add(br.ReadByte());", header.fieldName);
+        //                            sw.WriteLine("\t\t\t\t\t\t}");
         //                            break;
         //                        case ETableFieldType.IntList:
-        //                            sw.WriteLine("\t\t\t\tdata.{0} = dr.GetIntList(row[\"{0}\"].ToString());", field.fieldName);
+        //                            sw.WriteLine("\t\t\t\t\t\tvar len = br.ReadInt32();");
+        //                            sw.WriteLine("\t\t\t\t\t\tdata.{0} = new List<int>(len);", header.fieldName);
+        //                            sw.WriteLine("\t\t\t\t\t\tfor (int j = 0; j < len; j++)");
+        //                            sw.WriteLine("\t\t\t\t\t\t{");
+        //                            sw.WriteLine("\t\t\t\t\t\t\tdata.{0}.Add(br.ReadInt32());", header.fieldName);
+        //                            sw.WriteLine("\t\t\t\t\t\t}");
+        //                            break;
+        //                        case ETableFieldType.LongList:
+        //                            sw.WriteLine("\t\t\t\t\t\tvar len = br.ReadInt32();");
+        //                            sw.WriteLine("\t\t\t\t\t\tdata.{0} = new List<long>(len);", header.fieldName);
+        //                            sw.WriteLine("\t\t\t\t\t\tfor (int j = 0; j < len; j++)");
+        //                            sw.WriteLine("\t\t\t\t\t\t{");
+        //                            sw.WriteLine("\t\t\t\t\t\t\tdata.{0}.Add(br.ReadInt64());", header.fieldName);
+        //                            sw.WriteLine("\t\t\t\t\t\t}");
         //                            break;
         //                        case ETableFieldType.FloatList:
-        //                            sw.WriteLine("\t\t\t\tdata.{0} = dr.GetFloatList(row[\"{0}\"].ToString());", field.fieldName);
+        //                            sw.WriteLine("\t\t\t\t\t\tvar len = br.ReadInt32();");
+        //                            sw.WriteLine("\t\t\t\t\t\tdata.{0} = new List<float>(len);", header.fieldName);
+        //                            sw.WriteLine("\t\t\t\t\t\tfor (int j = 0; j < len; j++)");
+        //                            sw.WriteLine("\t\t\t\t\t\t{");
+        //                            sw.WriteLine("\t\t\t\t\t\t\tdata.{0}.Add(br.ReadSingle());", header.fieldName);
+        //                            sw.WriteLine("\t\t\t\t\t\t}");
         //                            break;
-        //                        //case ETableFieldType.StringList:
-        //                        //    sw.WriteLine("\t\t\t\tdata.{0} = dr.GetStringList(row[\"{0}\"].ToString());", field.fieldName);
-        //                        //    break;
-        //                        case ETableFieldType.Struct:
-        //                            sw.WriteLine("\t\t\t\tdata.{0} = dr.GetObject<{1}>(row[\"{0}\"].ToString());", field.fieldName, field.GetCsharpTypeName());
-        //                            break;
-        //                        case ETableFieldType.StructList:
-        //                            sw.WriteLine("\t\t\t\tdata.{0} = dr.GetObjectList<{1}>(row[\"{0}\"].ToString());", field.fieldName, field.GetTypeNameOfStructList());
-        //                            break;
+        //                            //case ETableFieldType.StringList:
+        //                            //    sw.WriteLine("\t\t\t\tdata.{0} = dr.GetStringList(row[\"{0}\"].ToString());", field.fieldName);
+        //                            //    break;
+        //                            //case ETableFieldType.Struct:
+        //                            //    sw.WriteLine("\t\t\t\tdata.{0} = dr.GetObject<{1}>(row[\"{0}\"].ToString());", field.fieldName, field.GetCsharpTypeName());
+        //                            //    break;
+        //                            //case ETableFieldType.StructList:
+        //                            //    sw.WriteLine("\t\t\t\tdata.{0} = dr.GetObjectList<{1}>(row[\"{0}\"].ToString());", field.fieldName, field.GetTypeNameOfStructList());
+        //                            //    break;
         //                    }
         //                }
-        //                sw.WriteLine("\t\t\t\tm_Datas[data.id] = data;");//必须有一个id
+        //                sw.WriteLine("\t\t\t\t\t\tm_Datas[data.id] = data;");
+        //                sw.WriteLine("\t\t\t\t\t}");
+        //                sw.WriteLine("\t\t\t\t}");
         //                sw.WriteLine("\t\t\t}");
         //                sw.WriteLine("\t\t\treturn true;");
         //                sw.WriteLine("\t\t}");
-        //                sw.WriteLine("\t}");
+
+        //                // tostring method
         //                sw.WriteLine();
+        //                sw.WriteLine("\t\tpublic override string ToString()");
+        //                sw.WriteLine("\t\t{");
+        //                sw.WriteLine("\t\t\tvar sb = new StringBuilder(1024);");
+        //                sw.WriteLine("\t\t\tforeach (var data in m_Datas.Values)");
+        //                sw.WriteLine("\t\t\t{");
+        //                foreach (var header in meta.header)
+        //                {
+        //                    sw.WriteLine("\t\t\t\tsb.Append(data.{0}).Append(\"\\t\");", header.fieldName);
+        //                }
+        //                sw.WriteLine("\t\t\t\tsb.AppendLine();");
+        //                sw.WriteLine("\t\t\t}");
+        //                sw.WriteLine("\t\t\treturn sb.ToString();");
+        //                sw.WriteLine("\t\t}");
+
+        //                sw.WriteLine("\t}");
+        //                sw.WriteLine("}");
         //            }
-
-        //            sw.WriteLine("\tpublic class TableConfig : SingletonTable<TableConfig>");
-        //            sw.WriteLine("\t{");
-        //            sw.WriteLine("\t\tpublic bool LoadTableConfig()");
-        //            sw.WriteLine("\t\t{");
-
-        //            foreach (var meta in metalist)
-        //            {
-        //                sw.WriteLine("\t\t\tif (!{0}.Instance.Load()) return false;", meta.GetClassName());
-        //            }
-        //            sw.WriteLine("\t\t\treturn true;");
-        //            sw.WriteLine("\t\t}");
-        //            sw.WriteLine("\t}");
-
-        //            sw.WriteLine("}");
         //        }
         //    }
-
         //}
+
 
 
         public static void MakeCsharpFile(List<ExcelData> excelDatas, string codepath)
         {
-            string csfile = codepath + "TableCfg.cs";
-            using (FileStream fs = new FileStream(csfile, FileMode.Create, FileAccess.Write))
+            string csfile = codepath + "CfgData.cs";
+
+            var sb = new StringBuilder(2048);
+
+            var unit = new CodeCompileUnit();
+            var codeNamespace = new CodeNamespace("tabtool");
+            unit.Namespaces.Add(codeNamespace);
+            codeNamespace.Imports.Add(new CodeNamespaceImport("System.Collections"));
+            codeNamespace.Imports.Add(new CodeNamespaceImport("System.Collections.Generic"));
+            codeNamespace.Imports.Add(new CodeNamespaceImport("System.IO"));
+            codeNamespace.Imports.Add(new CodeNamespaceImport("System.Text"));
+
+            for (int i = 0; i < excelDatas.Count; i++)
             {
-                using (StreamWriter sw = new StreamWriter(fs, Encoding.UTF8))
+                var meta = excelDatas[i];
+                // item class
+                var itemClass = new CodeTypeDeclaration(meta.GetItemName());
+                codeNamespace.Types.Add(itemClass);
+                foreach (var header in meta.header)
                 {
-                    sw.WriteLine("//HIS FILE IS GENERATED BY tabtool, DO NOT EDIT IT!");
-                    sw.WriteLine("//GENERATE TIME [{0}]", System.DateTime.Now.ToString());
-                    sw.WriteLine();
-                    sw.WriteLine("using System.Collections;");
-                    sw.WriteLine("using System.Collections.Generic;");
-                    sw.WriteLine("using System.Data;");
-                    sw.WriteLine();
-                    sw.WriteLine("namespace tabtool");
-                    sw.WriteLine("{");
-                    for (int i = 0; i < excelDatas.Count; i++)
-                    {
-                        var meta = excelDatas[i];
-                        sw.WriteLine();
-                        sw.WriteLine("\tpublic class {0}", meta.GetItemName());
-                        sw.WriteLine("\t{");
-
-                        foreach (var colData in meta.header)
-                        {
-                            sw.WriteLine("\t\t/// <summary>\n\t\t/// {0} \n\t\t/// </summary>", colData.fieldComment);
-                            sw.WriteLine("\t\tpublic {0} {1};", colData.fieldTypeName, colData.fieldName);
-                        }
-
-                        sw.WriteLine("\t}");
-                        sw.WriteLine();
-                        sw.WriteLine("\tpublic class {0} : TableManager<{1}, {0}>", meta.GetClassName(), meta.GetItemName());
-                        sw.WriteLine("\t{");
-                        sw.WriteLine("\t\tpublic override bool Load()");
-                        sw.WriteLine("\t\t{");
-                        //sw.WriteLine("\t\t\tTableReader tr = new TableReader();");
-                        //sw.WriteLine("\t\t\tDataReader dr = new DataReader();");
-                        sw.WriteLine("\t\t\tDataTable dt = tr.ReadFile(MyConfig.WorkDir+\"{0}.txt\");", meta.tablName);
-                        sw.WriteLine();
-                        sw.WriteLine("\t\t\tforeach(DataRow row in dt.Rows)");
-                        sw.WriteLine("\t\t\t{");
-                        sw.WriteLine("\t\t\t\tvar data = new {0}();", meta.GetItemName());
-
-                        foreach (var colData in meta.header)
-                        {
-                            switch (colData.fieldType)
-                            {
-                                case ETableFieldType.Int:
-                                    sw.WriteLine("\t\t\t\tdata.{0} = dr.GetInt(row[\"{0}\"].ToString());", colData.fieldName);
-                                    break;
-                                case ETableFieldType.Float:
-                                    sw.WriteLine("\t\t\t\tdata.{0} = dr.GetFloat(row[\"{0}\"].ToString());", colData.fieldName);
-                                    break;
-                                case ETableFieldType.String:
-                                    sw.WriteLine("\t\t\t\tdata.{0} = (row[\"{0}\"].ToString());", colData.fieldName);
-                                    break;
-                                case ETableFieldType.IntList:
-                                    sw.WriteLine("\t\t\t\tdata.{0} = dr.GetIntList(row[\"{0}\"].ToString());", colData.fieldName);
-                                    break;
-                                case ETableFieldType.FloatList:
-                                    sw.WriteLine("\t\t\t\tdata.{0} = dr.GetFloatList(row[\"{0}\"].ToString());", colData.fieldName);
-                                    break;
-                                    //case ETableFieldType.StringList:
-                                    //    sw.WriteLine("\t\t\t\tdata.{0} = dr.GetStringList(row[\"{0}\"].ToString());", field.fieldName);
-                                    //    break;
-                                    //case ETableFieldType.Struct:
-                                    //    sw.WriteLine("\t\t\t\tdata.{0} = dr.GetObject<{1}>(row[\"{0}\"].ToString());", field.fieldName, field.GetCsharpTypeName());
-                                    //    break;
-                                    //case ETableFieldType.StructList:
-                                    //    sw.WriteLine("\t\t\t\tdata.{0} = dr.GetObjectList<{1}>(row[\"{0}\"].ToString());", field.fieldName, field.GetTypeNameOfStructList());
-                                    //    break;
-                            }
-                        }
-                        sw.WriteLine("\t\t\t\tm_Datas[data.id] = data;");//必须有一个id
-                        sw.WriteLine("\t\t\t}");
-                        sw.WriteLine("\t\t\treturn true;");
-                        sw.WriteLine("\t\t}");
-                        sw.WriteLine("\t}");
-                        sw.WriteLine();
-                    }
-
-                    sw.WriteLine("\tpublic class TableConfig : SingletonTable<TableConfig>");
-                    sw.WriteLine("\t{");
-                    sw.WriteLine("\t\tpublic bool LoadTableConfig()");
-                    sw.WriteLine("\t\t{");
-
-                    foreach (var meta in excelDatas)
-                    {
-                        sw.WriteLine("\t\t\tif (!{0}.Instance.Load()) return false;", meta.GetClassName());
-                    }
-
-                    sw.WriteLine("\t\t\treturn true;");
-                    sw.WriteLine("\t\t}");
-                    sw.WriteLine("\t}");
-
-                    sw.WriteLine("}");
+                    var memberFiled = new CodeMemberField(TableHelper.s_TypeLut[header.fieldType], header.fieldName);
+                    memberFiled.Attributes = MemberAttributes.Public;
+                    memberFiled.Comments.Add(new CodeCommentStatement(header.fieldComment, true));
+                    itemClass.Members.Add(memberFiled);
                 }
+
+                // table class
+                var tableClass = new CodeTypeDeclaration(meta.GetClassName());
+                tableClass.BaseTypes.Add(new CodeTypeReference("TableBase", new CodeTypeReference[] { new CodeTypeReference(meta.GetItemName()), new CodeTypeReference(meta.GetClassName()) }));
+                codeNamespace.Types.Add(tableClass);
+
+                var loadMethod = new CodeMemberMethod();
+                tableClass.Members.Add(loadMethod);
+                loadMethod.Name = "Load";
+                loadMethod.ReturnType = new CodeTypeReference(typeof(bool));
+                loadMethod.Attributes = MemberAttributes.Override | MemberAttributes.Public;
+
+                sb.AppendLine($"\t\t\tvar bytes = GetBytes(\"{meta.tablName}.txt\");");
+                sb.AppendLine();
+                sb.AppendLine("\t\t\tusing (var ms = new MemoryStream(bytes))");
+                sb.AppendLine("\t\t\t{");
+                sb.AppendLine("\t\t\t\tusing (var br = new BinaryReader(ms))");
+                sb.AppendLine("\t\t\t\t{");
+                sb.AppendLine("\t\t\t\t\tvar version = br.ReadInt32();//version");
+                sb.AppendLine("\t\t\t\t\tvar dataLen = br.ReadInt32();");
+                sb.AppendLine("\t\t\t\t\tfor (int i = 0; i < dataLen; i++)");
+                sb.AppendLine("\t\t\t\t\t{");
+                sb.AppendLine($"\t\t\t\t\t\tvar data = new {meta.GetItemName()}();");
+                foreach (var header in meta.header)
+                {
+                    switch (header.fieldType)
+                    {
+                        case ETableFieldType.Byte:
+                            sb.AppendLine($"\t\t\t\t\t\tdata.{header.fieldName} = br.ReadByte();");
+                            break;
+                        case ETableFieldType.Int:
+                            sb.AppendLine($"\t\t\t\t\t\tdata.{header.fieldName} = br.ReadInt32();");
+                            break;
+                        case ETableFieldType.Long:
+                            sb.AppendLine($"\t\t\t\t\t\tdata.{header.fieldName} = br.ReadInt64();");
+                            break;
+                        case ETableFieldType.Float:
+                            sb.AppendLine($"\t\t\t\t\t\tdata.{header.fieldName} = br.ReadSingle();");
+                            break;
+                        case ETableFieldType.String:
+                            sb.AppendLine($"\t\t\t\t\t\tdata.{header.fieldName} = br.ReadString();");
+                            break;
+                        case ETableFieldType.ByteList:
+                            sb.AppendLine($"\t\t\t\t\t\tvar len = br.ReadInt32();");
+                            sb.AppendLine($"\t\t\t\t\t\tdata.{header.fieldName} = new List<byte>(len);");
+                            sb.AppendLine($"\t\t\t\t\t\tfor (int j = 0; j < len; j++)");
+                            sb.AppendLine("\t\t\t\t\t\t{");
+                            sb.AppendLine($"\t\t\t\t\t\t\tdata.{header.fieldName}.Add(br.ReadByte());");
+                            sb.AppendLine("\t\t\t\t\t\t}");
+                            break;
+                        case ETableFieldType.IntList:
+                            sb.AppendLine($"\t\t\t\t\t\tvar len = br.ReadInt32();");
+                            sb.AppendLine($"\t\t\t\t\t\tdata.{header.fieldName} = new List<int>(len);");
+                            sb.AppendLine($"\t\t\t\t\t\tfor (int j = 0; j < len; j++)");
+                            sb.AppendLine("\t\t\t\t\t\t{");
+                            sb.AppendLine($"\t\t\t\t\t\t\tdata.{header.fieldName}.Add(br.ReadInt32());");
+                            sb.AppendLine("\t\t\t\t\t\t}");
+                            break;
+                        case ETableFieldType.LongList:
+                            sb.AppendLine($"\t\t\t\t\t\tvar len = br.ReadInt32();");
+                            sb.AppendLine($"\t\t\t\t\t\tdata.{header.fieldName} = new List<long>(len);");
+                            sb.AppendLine("\t\t\t\t\t\tfor (int j = 0; j < len; j++)");
+                            sb.AppendLine("\t\t\t\t\t\t{");
+                            sb.AppendLine($"\t\t\t\t\t\t\tdata.{header.fieldName}.Add(br.ReadInt64());");
+                            sb.AppendLine("\t\t\t\t\t\t}");
+                            break;
+                        case ETableFieldType.FloatList:
+                            sb.AppendLine("\t\t\t\t\t\tvar len = br.ReadInt32();");
+                            sb.AppendLine($"\t\t\t\t\t\tdata.{header.fieldName} = new List<float>(len);");
+                            sb.AppendLine("\t\t\t\t\t\tfor (int j = 0; j < len; j++)");
+                            sb.AppendLine("\t\t\t\t\t\t{");
+                            sb.AppendLine($"\t\t\t\t\t\t\tdata.{header.fieldName}.Add(br.ReadSingle());");
+                            sb.AppendLine("\t\t\t\t\t\t}");
+                            break;
+                            //case ETableFieldType.StringList:
+                            //    sw.WriteLine("\t\t\t\tdata.{0} = dr.GetStringList(row[\"{0}\"].ToString());", field.fieldName);
+                            //    break;
+                            //case ETableFieldType.Struct:
+                            //    sw.WriteLine("\t\t\t\tdata.{0} = dr.GetObject<{1}>(row[\"{0}\"].ToString());", field.fieldName, field.GetCsharpTypeName());
+                            //    break;
+                            //case ETableFieldType.StructList:
+                            //    sw.WriteLine("\t\t\t\tdata.{0} = dr.GetObjectList<{1}>(row[\"{0}\"].ToString());", field.fieldName, field.GetTypeNameOfStructList());
+                            //    break;
+                    }
+                }
+                sb.AppendLine("\t\t\t\t\t\tm_Datas[data.id] = data;");
+                sb.AppendLine("\t\t\t\t\t}");
+                sb.AppendLine("\t\t\t\t}");
+                sb.AppendLine("\t\t\t}");
+                loadMethod.Statements.Add(new CodeSnippetStatement(sb.ToString()));
+                sb.Clear();
+                loadMethod.Statements.Add(new CodeMethodReturnStatement(
+                    new CodeSnippetExpression("true")));
+
+                // tostring method
+                var toStringMethod = new CodeMemberMethod();
+                tableClass.Members.Add(toStringMethod);
+                toStringMethod.Name = "ToString";
+                toStringMethod.ReturnType = new CodeTypeReference(typeof(string));
+                toStringMethod.Attributes = MemberAttributes.Override | MemberAttributes.Public;
+
+                sb.AppendLine("\t\t\tvar sb = new StringBuilder(1024);");
+                sb.AppendLine("\t\t\tforeach (var data in m_Datas.Values)");
+                sb.AppendLine("\t\t\t{");
+                foreach (var header in meta.header)
+                {
+                    sb.AppendLine($"\t\t\t\tsb.Append(data.{ header.fieldName}).Append(\"\\t\");");
+                }
+                sb.AppendLine("\t\t\t\tsb.AppendLine();");
+                sb.AppendLine("\t\t\t}");
+
+                toStringMethod.Statements.Add(new CodeSnippetStatement(sb.ToString()));
+                sb.Clear();
+
+                toStringMethod.Statements.Add(new CodeMethodReturnStatement(
+                    new CodeSnippetExpression("sb.ToString()")));
             }
 
+            var tw = new IndentedTextWriter(new StreamWriter(csfile, false), "\t");
+            var provider = new CSharpCodeProvider();
+            tw.WriteLine("//------------------------------------------------------------------------------");
+            tw.WriteLine("// File   : {0}", "TODO");
+            tw.WriteLine("// Author : Saro");
+            tw.WriteLine("// Time   : {0}", DateTime.Now.ToString());
+            tw.WriteLine("//------------------------------------------------------------------------------");
+            provider.GenerateCodeFromCompileUnit(unit, tw, new CodeGeneratorOptions() { BracingStyle = "C" });
+            tw.Close();
         }
     }
 }

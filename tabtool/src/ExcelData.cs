@@ -8,11 +8,15 @@ namespace tabtool
 {
     internal enum ETableFieldType : byte
     {
+        Byte,
         Int,
+        Long,
         Float,
         String,
         Struct,// TODO
+        ByteList,
         IntList,
+        LongList,
         FloatList,
         StructList,// TODO
     }
@@ -20,7 +24,6 @@ namespace tabtool
     internal class ExcelData
     {
         public const int k_DataVersion = 1;
-        public static string[] ts = { "int", "float", "string", "xxx", "List<int>", "List<float>", "xxx" };
 
         public string tablName;
         public List<Header> header;
@@ -95,10 +98,6 @@ namespace tabtool
                     sb.Append(word).Append("\t");
                 }
                 sb.AppendLine();
-            }
-            foreach (var item in header)
-            {
-
             }
 
             return sb.ToString();

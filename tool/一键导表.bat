@@ -1,2 +1,2 @@
-"../tabtool/bin/Debug/tabtool.exe" --out_client ../csharptest/config/ --out_cs ../csharptest/ --in_excel ./excel/
+"../tabtool/bin/Debug/tabtool.exe" --out_client ../tabtool.test/config/ --out_cs ../tabtool.test/ --in_excel ./excel/
 pause

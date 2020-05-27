@@ -6,8 +6,9 @@ using System.Threading.Tasks;
 
 namespace tabtool
 {
-    class MyConfig
+    public class TableCfg
     {
-        public const string WorkDir = "../../config/";
+        public static string s_TableSrc = "";
+        public static Func<string, byte[]> s_BytesLoader;
     }
 }
