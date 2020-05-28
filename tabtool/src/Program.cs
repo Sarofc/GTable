@@ -24,7 +24,6 @@ namespace tabtool
             if (cmder.Has("--out_client")) { clientOutDir = cmder.Get("--out_client"); } else { Console.WriteLine("out_client missing"); return; }
             ////if (cmder.Has("--out_server")) { serverOutDir = cmder.Get("--out_server"); } else { return; }
             if (cmder.Has("--in_excel")) { excelDir = cmder.Get("--in_excel"); } else { Console.WriteLine("in_excel missing"); return; }
-            //if (cmder.Has("--in_tbs")) { metafile = cmder.Get("--in_tbs"); } else { Console.WriteLine("in_tbs missing"); return; }
 
             //Console.WriteLine(clientOutDir);
             //Console.WriteLine(excelDir);
@@ -33,16 +32,6 @@ namespace tabtool
             //创建导出目录
             if (!Directory.Exists(clientOutDir)) Directory.CreateDirectory(clientOutDir);
             //if (!Directory.Exists(serverOutDir)) Directory.CreateDirectory(serverOutDir);
-
-            //先读取tablemata文件
-            //TableStruct tbs = new TableStruct();
-            //if (!tbs.ImportTableStruct(metafile))
-            //{
-            //    Console.WriteLine("parse tbs file error！");
-            //    return;
-            //}
-            //Console.WriteLine();
-            //Console.WriteLine("parse tbs file successful!");
 
             List<ExcelData> clientExcelDataList = new List<ExcelData>();
 
@@ -66,12 +55,14 @@ namespace tabtool
 
                     for (int i = 0; i < sheets.Count; i++)
                     {
+                        Console.WriteLine();
+                        Console.WriteLine("parsing...... " + sheets[i].SheetName);
                         string clientPath = clientOutDir + sheets[i].SheetName + ".txt";
                         //string serverPath = serverOutDir + sheets[i].SheetName + ".txt";
 
                         var data = helper.ParseExcel(sheets[i]);
 
-                        Console.WriteLine(data.ToString());
+                        //Console.WriteLine(data.ToString());
 
                         //helper.WriteTxtAsset(data, clientPath);
                         helper.WriteByteAsset(data, clientPath);
@@ -87,6 +78,7 @@ namespace tabtool
             }
             //time.Stop();
             //Console.WriteLine("end: " + time.ElapsedMilliseconds);
+            Console.WriteLine();
             Console.WriteLine("export success!");
 
             if (cmder.Has("--out_cs"))

@@ -91,7 +91,7 @@ namespace tabtool
                 var keyCell = row.GetCell(1);
                 if ((keyCell == null || string.IsNullOrEmpty(keyCell.ToString())))
                 {
-                    Console.WriteLine($"key [{i}B] is null or empty. break.");
+                    Console.WriteLine($"key [{i + 1}B] is null or empty. break.");
                     break;
                 }
 

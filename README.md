@@ -24,6 +24,8 @@
 
 ## 如何使用
 
+### 1.一键打表
+
 ```bat
 @echo off
 
@@ -41,6 +43,29 @@ pause
 
 >>☞ 参考`tool/一键导出表.bat`的用法。<!-- 暂时不提供unity示例工程。 --></br>
  ☞ Excel格式参考`tool/excel`下的表。
+
+### 2.读取数据
+
+```csharp
+    TableCfg.s_TableSrc = @"your bytes folder";
+
+    TableCfg.s_BytesLoader = path =>
+    {
+        using (var fs = new FileStream(path, FileMode.Open))
+        {
+            var data = new byte[fs.Length];
+            fs.Read(data, 0, data.Length);
+            return data;
+        }
+    };
+
+    CfgTest.Get().Load();
+
+    Console.WriteLine(CfgTest.Get().ToString());
+    Console.WriteLine(CfgTest.Get().GetTableItem((int)EIDTest.key1)._string);
+
+    CfgTest.Get().Unload();
+```
 
 ## Nuget依赖
 
