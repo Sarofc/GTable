@@ -6,21 +6,6 @@ using System.Threading.Tasks;
 
 namespace tabtool
 {
-    internal enum ETableFieldType : byte
-    {
-        Byte,
-        Int,
-        Long,
-        Float,
-        String,
-        Struct,// TODO
-        ByteList,
-        IntList,
-        LongList,
-        FloatList,
-        StructList,// TODO
-    }
-
     internal class ExcelData
     {
         public const int k_DataVersion = 1;
@@ -29,13 +14,13 @@ namespace tabtool
         public List<Header> header;
         public List<List<string>> rowValues;
 
-        public class Header
+        internal class Header
         {
             public string define;
             public string fieldComment;
             public string fieldName;
             public string fieldTypeName;
-            public ETableFieldType fieldType;
+            //public ETableFieldType fieldType;
 
             public string GetCsharpTypeName()
             {
@@ -51,41 +36,50 @@ namespace tabtool
             }
         }
 
-        public string GetClassName()
+        internal string GetClassName()
         {
-            return "Cfg" + tablName + "Table";
+            return "Cfg" + tablName;
         }
 
-        public string GetItemName()
+        internal string GetItemName()
         {
-            return "Tbs" + tablName + "Table";
+            return "Db" + tablName;
         }
 
-        public override string ToString()
+        internal string GetEnumName()
+        {
+            return "EID" + tablName;
+        }
+
+        internal string ToString(bool ignore = false)
         {
             var sb = new StringBuilder(1024);
             //sb.AppendLine("Defines: ");
-            sb.AppendLine($"Row Count: {rowValues.Count} Col Count: {header.Count}");
+            sb.AppendLine($"Row Count: {rowValues.Count} Col Count: {rowValues[0].Count} {header.Count}");
             foreach (var data in header)
             {
+                if (ignore && TableHelper.IgnoreHeader(data)) continue;
                 sb.Append(data.define).Append("\t");
             }
             sb.AppendLine();
             //sb.AppendLine("Field Commits: ");
             foreach (var data in header)
             {
+                if (ignore && TableHelper.IgnoreHeader(data)) continue;
                 sb.Append(data.fieldComment).Append("\t");
             }
             sb.AppendLine();
             //sb.AppendLine("Field Types: ");
             foreach (var data in header)
             {
-                sb.Append(data.fieldType).Append("\t");
+                if (ignore && TableHelper.IgnoreHeader(data)) continue;
+                sb.Append(data.fieldTypeName).Append("\t");
             }
             sb.AppendLine();
             //sb.AppendLine("Field Names: ");
             foreach (var data in header)
             {
+                if (ignore && TableHelper.IgnoreHeader(data)) continue;
                 sb.Append(data.fieldName).Append("\t");
             }
             sb.AppendLine();
@@ -93,8 +87,11 @@ namespace tabtool
             for (int i1 = 0; i1 < rowValues.Count; i1++)
             {
                 var line = rowValues[i1];
+                var count = -1;
                 foreach (var word in line)
                 {
+                    count++;
+                    if (ignore && TableHelper.IgnoreHeader(header[count])) continue;
                     sb.Append(word).Append("\t");
                 }
                 sb.AppendLine();

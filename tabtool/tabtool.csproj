@@ -65,7 +65,6 @@
     <Compile Include="src\CmdlineHelper.cs" />
     <Compile Include="src\CodeGen.cs" />
     <Compile Include="src\ExcelData.cs" />
-    <Compile Include="src\ExportFieldDefine.cs" />
     <Compile Include="src\Program.cs" />
     <Compile Include="src\TableHelper.cs" />
     <Compile Include="src\TableMeta.cs" />

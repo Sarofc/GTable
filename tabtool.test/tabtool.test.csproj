@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CfgData.cs" />
+    <Compile Include="CfgEnum.cs" />
     <Compile Include="_CfgItemTable.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="test\Program.cs" />

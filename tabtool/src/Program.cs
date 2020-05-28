@@ -15,7 +15,6 @@ namespace tabtool
         static void Main(string[] args)
         {
             Load(args);
-
         }
 
         static void Load(string[] args)

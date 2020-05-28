@@ -6,36 +6,35 @@ using System.Text;
 
 namespace tabtool
 {
-    public abstract class TableBase<T, U>
+    public abstract class TableBase<D, T>
     {
-        public static U Get()
+        public static T Get()
         {
             if (s_Instance == null)
             {
-                s_Instance = Activator.CreateInstance<U>();
-                (s_Instance as TableBase<T, U>).m_Datas = new Dictionary<int, T>();
+                s_Instance = Activator.CreateInstance<T>();
+                (s_Instance as TableBase<D, T>).m_Datas = new Dictionary<int, D>();
             }
 
             return s_Instance;
         }
 
-        protected static U s_Instance;
+        protected static T s_Instance;
 
-        protected Dictionary<int, T> m_Datas;
+        protected Dictionary<int, D> m_Datas;
 
-        public Dictionary<int, T> GetTable()
+        public Dictionary<int, D> GetTable()
         {
             return m_Datas;
         }
 
-        public T GetTableItem(int key)
+        public D GetTableItem(int key)
         {
-            T t;
-            if (m_Datas.TryGetValue(key, out t))
+            if (m_Datas.TryGetValue(key, out D t))
             {
                 return t;
             }
-            return default(T);
+            return default;
         }
 
         public abstract bool Load();
@@ -56,7 +55,5 @@ namespace tabtool
             m_Datas = null;
             s_Instance = default;
         }
-
-        
     }
 }

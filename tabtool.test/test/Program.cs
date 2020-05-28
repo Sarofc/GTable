@@ -16,27 +16,6 @@ namespace tabtool
 {
     class Program
     {
-        public enum ETableFieldType : byte
-        {
-            Byte,
-            Int,
-            Long,
-            Float,
-            String,
-            Struct,// TODO
-            ByteList,
-            IntList,
-            LongList,
-            FloatList,
-            StructList,// TODO
-        }
-
-        class Item
-        {
-            public int id;
-            public string value;
-        }
-
         static void Main(string[] args)
         {
             TableCfg.s_TableSrc = @"O:\Git\Saro\tabtool\tabtool.test\config\";
@@ -51,32 +30,15 @@ namespace tabtool
                 }
             };
 
-            CfgITEMTable.Get().Load();
+            CfgTest.Get().Load();
 
-            Console.WriteLine(CfgITEMTable.Get().ToString());
-            Console.WriteLine(CfgITEMTable.Get().GetTableItem(1).name);
+            Console.WriteLine(CfgTest.Get().ToString());
+            Console.WriteLine(CfgTest.Get().GetTableItem((int)EIDTest.key1)._string);
 
-            CfgITEMTable.Get().Unload();
+            CfgTest.Get().Unload();
 
             Console.ReadKey();
         }
 
-        static void Test()
-        {
-            //var time = new Stopwatch();
-            //time.Start();
-            //if (CfgachiveTable.Instance.Load())
-            //{
-            //    TbsachiveItem item = CfgachiveTable.Instance.GetTableItem(1);
-            //    if (item != null)
-            //    {
-            //        Console.WriteLine(item);
-            //    }
-            //}
-            //time.Stop();
-            //Console.WriteLine("Load huge table: " + time.ElapsedMilliseconds / 1000f);
-
-            //Console.ReadKey();
-        }
     }
 }
