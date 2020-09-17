@@ -1,15 +1,12 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Collections;
 using NPOI.SS.UserModel;
 using NPOI.HSSF.UserModel;
-using System.IO;
-using System.Data;
 using NPOI.XSSF.UserModel;
-using System.Xml;
 using NPOI.SS.Formula.Functions;
 
 namespace tabtool
@@ -114,6 +111,8 @@ namespace tabtool
                 }
             }
 
+            //Console.WriteLine(data.ToString());
+
             return data;
         }
 
@@ -185,29 +184,7 @@ namespace tabtool
         [Obsolete("", true)]
         internal void WriteTxtAsset(ExcelData data, string path)
         {
-            using (FileStream fs = new FileStream(path, FileMode.Create, FileAccess.Write))
-            {
-                StreamWriter sw = new StreamWriter(fs, Encoding.UTF8);
 
-                for (int i = 0; i < data.rowValues.Count; i++)
-                {
-                    var line = data.rowValues[i];
-                    for (int j = 0; j < line.Count; j++)
-                    {
-                        if (IgnoreHeader(data.header[i])) continue;
-                        if (j == line.Count - 1)
-                        {
-                            sw.Write(line[j]);
-                        }
-                        else
-                        {
-                            sw.Write(line[j] + "\t");
-                        }
-                    }
-                    sw.WriteLine();
-                }
-                sw.Close();
-            }
         }
 
         /// <summary>
@@ -215,19 +192,19 @@ namespace tabtool
         /// </summary>
         /// <param name="data"></param>
         /// <param name="path"></param>
-        internal void WriteByteAsset(ExcelData data, string path)
+        internal void WriteByteAsset(in ExcelData data, string path)
         {
             using (FileStream fs = new FileStream(path, FileMode.Create, FileAccess.Write))
             {
-                BinaryWriter sw = new BinaryWriter(fs, Encoding.UTF8);
+                BinaryWriter bw = new BinaryWriter(fs, Encoding.UTF8);
 
-                sw.Write(ExcelData.k_DataVersion);
-                sw.Write(data.rowValues.Count);//行数据长度
+                bw.Write(ExcelData.k_DataVersion);
+                bw.Write(data.rowValues.Count);//行数据长度
 
                 for (int i = 0; i < data.rowValues.Count; i++)
                 {
                     var line = data.rowValues[i];
-                    for (int j = 0; j < line.Count; j++)
+                    for (int j = 0; j < data.header.Count; j++)
                     {
                         if (IgnoreHeader(data.header[j])) continue;
 
@@ -238,92 +215,112 @@ namespace tabtool
 
                         if (t == typeof(byte))
                         {
-                            byte.TryParse(line[j], out byte bv);
-                            sw.Write(bv);
+                            var res = byte.TryParse(line[j], out byte val);
+                            if (res) bw.Write(val);
                         }
                         else if (t == typeof(int))
                         {
-                            int.TryParse(line[j], out int iv);
-                            sw.Write(iv);
+                            var res = int.TryParse(line[j], out int val);
+                            if (res) bw.Write(val);
                         }
                         else if (t == typeof(long))
                         {
-                            long.TryParse(line[j], out long lv);
-                            sw.Write(lv);
+                            var res = long.TryParse(line[j], out long val);
+                            if (res) bw.Write(val);
                         }
                         else if (t == typeof(float))
                         {
-                            float.TryParse(line[j], out float fv);
-                            sw.Write(fv);
+                            var res = float.TryParse(line[j], out float val);
+                            if (res) bw.Write(val);
                         }
                         else if (t == typeof(string))
                         {
-                            sw.Write(line[j]);
+                            bw.Write(line[j]);
                         }
                         else if (t == typeof(List<byte>))
                         {
                             if (string.IsNullOrEmpty(line[j]))
                             {
-                                sw.Write((ushort)0);
+                                bw.Write((ushort)0);
                                 continue;
                             }
                             var bvs = line[j].Split(',');
-                            sw.Write((ushort)bvs.Length);//长度
+                            bw.Write((ushort)bvs.Length);//长度
                             for (ushort i1 = 0; i1 < bvs.Length; i1++)
                             {
-                                byte.TryParse(bvs[i1].Trim(), out byte bvl);
-                                sw.Write(bvl);
+                                var res = byte.TryParse(bvs[i1].Trim(), out byte val);
+                                if (res) bw.Write(val);
                             }
                         }
                         else if (t == typeof(List<int>))
                         {
                             if (string.IsNullOrEmpty(line[j]))
                             {
-                                sw.Write((ushort)0);
+                                bw.Write((ushort)0);
                                 continue;
                             }
                             var ivs = line[j].Split(',');
-                            sw.Write((ushort)ivs.Length);//长度
+                            bw.Write((ushort)ivs.Length);//长度
                             for (ushort i1 = 0; i1 < ivs.Length; i1++)
                             {
-                                int.TryParse(ivs[i1].Trim(), out int ivl);
-                                sw.Write(ivl);
+                                var res = int.TryParse(ivs[i1].Trim(), out int val);
+                                if (res) bw.Write(val);
                             }
                         }
                         else if (t == typeof(List<long>))
                         {
                             if (string.IsNullOrEmpty(line[j]))
                             {
-                                sw.Write((ushort)0);
+                                bw.Write((ushort)0);
                                 continue;
                             }
                             var lvs = line[j].Split(',');
-                            sw.Write((ushort)lvs.Length);//长度
+                            bw.Write((ushort)lvs.Length);//长度
                             for (ushort i1 = 0; i1 < lvs.Length; i1++)
                             {
-                                long.TryParse(lvs[i1].Trim(), out long lvl);
-                                sw.Write(lvl);
+                                var res = long.TryParse(lvs[i1].Trim(), out long val);
+                                if (res) bw.Write(val);
                             }
                         }
                         else if (t == typeof(List<float>))
                         {
                             if (string.IsNullOrEmpty(line[j]))
                             {
-                                sw.Write((ushort)0);
+                                bw.Write((ushort)0);
                                 continue;
                             }
                             var fvs = line[j].Split(',');
-                            sw.Write((ushort)fvs.Length);//长度
+                            bw.Write((ushort)fvs.Length);//长度
                             for (ushort i1 = 0; i1 < fvs.Length; i1++)
                             {
-                                float.TryParse(fvs[i1].Trim(), out float fvl);
-                                sw.Write(fvl);
+                                var res = float.TryParse(fvs[i1].Trim(), out float val);
+                                if (res) bw.Write(val);
                             }
-                            break;
+                        }
+                        else if (t == typeof(Dictionary<int, int>))
+                        {
+                            if (string.IsNullOrEmpty(line[j]))
+                            {
+                                bw.Write((ushort)0);
+                                continue;
+                            }
+                            var ivp = line[j].Split(',');
+                            bw.Write((ushort)ivp.Length);//长度
+                            for (ushort i1 = 0; i1 < ivp.Length; i1++)
+                            {
+                                var pair = ivp[i1].Split('|');
+                                if (pair.Length != 2) throw new Exception("Dictionary<int,int> parse error.Required format [int|int]");
+
+                                var res = int.TryParse(pair[0].Trim(), out int key);
+                                var res1 = int.TryParse(pair[1].Trim(), out int val);
+
+                                if (res) bw.Write(key);
+                                if (res1) bw.Write(val);
+                            }
                         }
                     }
                 }
-                sw.Close();
+                bw.Close();
             }
         }
 
@@ -356,6 +353,9 @@ namespace tabtool
             {"long+", typeof(List<long>) },
             {"float+", typeof(List<float>) },
             {"string", typeof(string) },
+            {"[int|int]",typeof(Dictionary<int,int>) },
+
+            // add more
         };
 
         internal static string[] InValidSheetNames = new string[]

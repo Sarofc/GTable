@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.29324.140
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tabtool", "tabtool\tabtool.csproj", "{3EA4F69F-A3E7-439C-BBE1-741D4899B923}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tabtool.test", "tabtool.test\tabtool.test.csproj", "{003899E1-4651-4E64-964B-AF1BB8A9EDF8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tabtool.sample", "tabtool.sample\tabtool.sample.csproj", "{E8BB3BDF-973B-4538-8235-1FF429264581}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +17,10 @@ Global
 		{3EA4F69F-A3E7-439C-BBE1-741D4899B923}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3EA4F69F-A3E7-439C-BBE1-741D4899B923}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3EA4F69F-A3E7-439C-BBE1-741D4899B923}.Release|Any CPU.Build.0 = Release|Any CPU
-		{003899E1-4651-4E64-964B-AF1BB8A9EDF8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{003899E1-4651-4E64-964B-AF1BB8A9EDF8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{003899E1-4651-4E64-964B-AF1BB8A9EDF8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{003899E1-4651-4E64-964B-AF1BB8A9EDF8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E8BB3BDF-973B-4538-8235-1FF429264581}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E8BB3BDF-973B-4538-8235-1FF429264581}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E8BB3BDF-973B-4538-8235-1FF429264581}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E8BB3BDF-973B-4538-8235-1FF429264581}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

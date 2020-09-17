@@ -48,7 +48,11 @@ namespace tabtool
                     }
                     if (TableHelper.IgnoreHeader(header)) continue;
 
-                    var memberFiled = new CodeMemberField(TableHelper.s_TypeLut[header.fieldTypeName], header.fieldName);
+                    if (!TableHelper.s_TypeLut.TryGetValue(header.fieldTypeName, out Type t))
+                    {
+                        throw new Exception("type is not support: " + header.fieldTypeName);
+                    }
+                    var memberFiled = new CodeMemberField(t, header.fieldName);
                     memberFiled.Attributes = MemberAttributes.Public;
 
                     memberFiled.Comments.Add(new CodeCommentStatement("<summary>", true));
@@ -182,6 +186,25 @@ namespace tabtool
                         sb.AppendLine($"\t\t\t\t\t\t\tdata.{header.fieldName}.Add(br.ReadSingle());");
                         sb.AppendLine("\t\t\t\t\t\t}");
                     }
+                    else if (t == typeof(Dictionary<int, int>))
+                    {
+                        if (first)
+                        {
+                            sb.AppendLine($"\t\t\t\t\t\tvar len = br.ReadUInt16();");
+                            first = false;
+                        }
+                        else
+                        {
+                            sb.AppendLine($"\t\t\t\t\t\tlen = br.ReadUInt16();");
+                        }
+                        sb.AppendLine($"\t\t\t\t\t\tdata.{header.fieldName} = new Dictionary<int, int>(len);");
+                        sb.AppendLine("\t\t\t\t\t\tfor (int j = 0; j < len; j++)");
+                        sb.AppendLine("\t\t\t\t\t\t{");
+                        sb.AppendLine($"\t\t\t\t\t\t\tvar key = br.ReadInt32();");
+                        sb.AppendLine($"\t\t\t\t\t\t\tvar val = br.ReadInt32();");
+                        sb.AppendLine($"\t\t\t\t\t\t\tdata.{header.fieldName}.Add(key, val);");
+                        sb.AppendLine("\t\t\t\t\t\t}");
+                    }
                 }
                 sb.AppendLine($"\t\t\t\t\t\tm_Datas[data.{meta.header[0].fieldName}] = data;");
                 sb.AppendLine("\t\t\t\t\t}");
@@ -226,6 +249,10 @@ namespace tabtool
                             || t == typeof(List<int>)
                             || t == typeof(List<long>)
                             || t == typeof(List<float>))
+                    {
+                        sb.AppendLine($"\t\t\t\tsb.Append(string.Join(\",\", data.{header.fieldName})).Append(\"\\t\");");
+                    }
+                    else if (t == typeof(Dictionary<int, int>))
                     {
                         sb.AppendLine($"\t\t\t\tsb.Append(string.Join(\",\", data.{header.fieldName})).Append(\"\\t\");");
                     }

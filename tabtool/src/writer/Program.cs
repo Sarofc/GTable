@@ -19,7 +19,7 @@ namespace tabtool
 
         static void Load(string[] args)
         {
-            string clientOutDir, serverOutDir, csOutDir, excelDir, metafile;
+            string clientOutDir, serverOutDir, csOutDir, excelDir;
             CmdlineHelper cmder = new CmdlineHelper(args);
             if (cmder.Has("--out_client")) { clientOutDir = cmder.Get("--out_client"); } else { Console.WriteLine("out_client missing"); return; }
             ////if (cmder.Has("--out_server")) { serverOutDir = cmder.Get("--out_server"); } else { return; }
@@ -27,7 +27,6 @@ namespace tabtool
 
             //Console.WriteLine(clientOutDir);
             //Console.WriteLine(excelDir);
-            //Console.WriteLine(metafile);
 
             //创建导出目录
             if (!Directory.Exists(clientOutDir)) Directory.CreateDirectory(clientOutDir);
@@ -87,7 +86,6 @@ namespace tabtool
                 if (!Directory.Exists(csOutDir))
                     Directory.CreateDirectory(csOutDir);
 
-                //CodeGen.MakeCsharpFileTbs(tbs.GetMetaList(), csOutDir);
                 CodeGen.MakeCsharpFile(clientExcelDataList, csOutDir);
                 Console.WriteLine();
                 Console.WriteLine("generate .cs code successful!");

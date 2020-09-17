@@ -55,7 +55,7 @@ namespace tabtool
         {
             var sb = new StringBuilder(1024);
             //sb.AppendLine("Defines: ");
-            sb.AppendLine($"Row Count: {rowValues.Count} Col Count: {rowValues[0].Count} {header.Count}");
+            sb.AppendLine($"Row Count: {rowValues.Count} Col Count: {rowValues[0].Count} Head Count: {header.Count}");
             foreach (var data in header)
             {
                 if (ignore && TableHelper.IgnoreHeader(data)) continue;

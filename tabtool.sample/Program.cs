@@ -1,24 +1,19 @@
-﻿//using NPOI.SS.UserModel;
-//using NPOI.XSSF.UserModel;
-using System;
-using System.Collections;
+﻿using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading.Tasks;
-using tabtool;
 
-namespace tabtool
+namespace tabtool.sample
 {
     class Program
     {
+        public const string k_ConfigPath = @"..\..\generate\data\";
+
         static void Main(string[] args)
         {
-            TableCfg.s_TableSrc = @"O:\Git\Saro\tabtool\tabtool.test\config\";
+            TableCfg.s_TableSrc = k_ConfigPath;
 
             TableCfg.s_BytesLoader = path =>
             {
@@ -31,14 +26,12 @@ namespace tabtool
             };
 
             CfgTest.Get().Load();
-
             Console.WriteLine(CfgTest.Get().ToString());
-            Console.WriteLine(CfgTest.Get().GetTableItem((int)EIDTest.key1)._string);
 
-            CfgTest.Get().Unload();
+            CfgTest1.Get().Load();
+            Console.WriteLine(CfgTest1.Get().ToString());
 
             Console.ReadKey();
         }
-
     }
 }
