@@ -4,21 +4,22 @@
 
 .net 4.7.1
 
-## TODO
+## 特性
 
-- [x] 生成/解析二进制数据
+- [x] 二进制数据，生成cs文件来读取数据
 - [x] 枚举Key
+- [x] 支持1~4个key
 - [ ] 支持双端代码生成
 
-## Excel表规则
+## Excel表头
 
-| 标识   | 含义                                                              |
-| ------ | ----------------------------------------------------------------- |
-| define | "del"不导出该字段，"enum~key"键枚举。                             |
-| info   | 给策划看，也会在生成代码中作为注释                                |
-| type   | 字段类型。支持 byte,int,long,float,string,bytes,ints,longs,floats |
-| name   | 生成代码中的字段名称。                                            |
-| value  | 每个表第一个字段必须是int类型，且不能重复，作为键来使用。         |
+| 标识   | 含义                                                                           |
+| ------ | ------------------------------------------------------------------------------ |
+| define(后续会改为client,server) | "key"支持1~4个key,类型必须为int; "del"不导出该字段; "enum~key"键枚举。         |
+| info   | 字段注释                                                                       |
+| type   | 字段类型。支持 byte,int,long,float,string,bytes,ints,longs,floats,map<int,int> |
+| name   | 生成代码中的字段名称。                                                         |
+| value  | 每个表第一个字段必须是int类型，且不能重复，作为键来使用。                      |
 
 - 支持多表/多sheet，最后生成sheet表相关的数据文件名/代码类名。但会自动过滤包含 [Ss]heet 字符串的sheet。
 
@@ -26,29 +27,22 @@
 
 ### 1.一键打表
 
-```bat
-@echo off
-
-"../tabtool/bin/Debug/tabtool.exe" --out_client ../tabtool.test/config/ --out_cs ../tabtool.test/ --in_excel ./excel/
-
-pause
-```
-
 --out_client 指定导出客户端导出配置文件目录<br>
 --in_excel excel文件所在的目录<br>
 --out_cs 导出C#代码目录，可选<br>
-<!-- --in_tbs tbs文件路径（表中用到的结构体）<br> -->
 <!--   --out_server 导出服务器配置文件目录<br> -->
 <!--   --out_cpp 导出C++代码目录，可选<br> -->
 
->>☞ 参考`tool/一键导出表.bat`的用法。<!-- 暂时不提供unity示例工程。 --></br>
- ☞ Excel格式参考`tool/excel`下的表。
+>>☞ 参考`tables/*.bat`的用法。</br>
+ ☞ Excel格式参考`tables/excel`下的表。
 
 ### 2.读取数据
 
 ```csharp
-    TableCfg.s_TableSrc = @"your bytes folder";
+    // 设置数据表路径
+    TableCfg.s_TableSrc = k_ConfigPath;
 
+    // 数据表加载委托
     TableCfg.s_BytesLoader = path =>
     {
         using (var fs = new FileStream(path, FileMode.Open))
@@ -59,12 +53,18 @@ pause
         }
     };
 
-    CfgTest.Get().Load();
+    // 加载指定数据表
+    csvTest.Get().Load();
+    Console.WriteLine(csvTest.Get().PrintTable());
 
-    Console.WriteLine(CfgTest.Get().ToString());
-    Console.WriteLine(CfgTest.Get().GetTableItem((int)EIDTest.key1)._string);
+    csvTest1.Get().Load();
+    Console.WriteLine(csvTest1.Get().PrintTable());
 
-    CfgTest.Get().Unload();
+    // 通过 csvXXX.Query(key1,key2,...) 获取行数据
+    Console.WriteLine(string.Join(",", csvTest2.Query(0, 0, 0).float_arr));
+
+    // 卸载指定数据表
+    csvTest2.Get().Unload();
 ```
 
 ## Nuget依赖

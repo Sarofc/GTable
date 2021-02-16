@@ -29,6 +29,8 @@ namespace Saro.Table.sample
 
             Console.WriteLine(string.Join(",", csvTest2.Query(0, 0, 0).float_arr));
 
+            csvTest2.Get().Unload();
+
             Console.ReadKey();
         }
     }
