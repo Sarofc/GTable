@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
-namespace tabtool
+namespace Saro.Table
 {
     internal class ExcelData
     {
@@ -14,43 +13,82 @@ namespace tabtool
         public List<Header> header;
         public List<List<string>> rowValues;
 
+        private static HashSet<string> s_Set = new HashSet<string>();
+
+        internal int GetKeyCount() => header.Count(h => TableHelper.IsKey(h));
+
+        /// <summary>
+        /// 字段名是否重复
+        /// </summary>
+        /// <returns></returns>
+        internal bool FieldNameDuplicated()
+        {
+            s_Set.Clear();
+
+            foreach (var h in header)
+            {
+                if (s_Set.Contains(h.fieldName)) return true;
+                s_Set.Add(h.fieldName);
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// 数据表头
+        /// </summary>
         internal class Header
         {
+            /// <summary>
+            /// 定义
+            /// </summary>
             public string define;
+            /// <summary>
+            /// 注释
+            /// </summary>
             public string fieldComment;
+            /// <summary>
+            /// 字段名，唯一
+            /// </summary>
             public string fieldName;
+            /// <summary>
+            /// 字段类型
+            /// </summary>
             public string fieldTypeName;
-            //public ETableFieldType fieldType;
-
-            public string GetCsharpTypeName()
-            {
-                //if (fieldType == ETableFieldType.Struct)
-                //{
-                //    return fieldTypeName;
-                //}
-                //if (fieldType == ETableFieldType.StructList)
-                //{
-                //    return string.Format("List<{0}>", fieldTypeName.Substring(0, fieldTypeName.Length - 1));
-                //}
-                return fieldTypeName;
-            }
         }
 
-        internal string GetClassName()
+        /// <summary>
+        /// wrapper类名
+        /// </summary>
+        /// <returns></returns>
+        internal string GetWrapperClassName()
         {
-            return "Cfg" + tablName;
+            return "csv" + tablName;
         }
 
-        internal string GetItemName()
+        /// <summary>
+        /// 数据实体类名
+        /// </summary>
+        /// <returns></returns>
+        internal string GetEntityClassName()
         {
-            return "Db" + tablName;
+            return "t" + tablName;
         }
 
+        /// <summary>
+        /// 枚举名
+        /// </summary>
+        /// <returns></returns>
         internal string GetEnumName()
         {
-            return "EID" + tablName;
+            return "e" + tablName;
         }
 
+        /// <summary>
+        /// debug用，打印数据表
+        /// </summary>
+        /// <param name="ignore"></param>
+        /// <returns></returns>
         internal string ToString(bool ignore = false)
         {
             var sb = new StringBuilder(1024);

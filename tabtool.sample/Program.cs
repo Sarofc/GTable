@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace tabtool.sample
+namespace Saro.Table.sample
 {
     class Program
     {
@@ -25,11 +21,13 @@ namespace tabtool.sample
                 }
             };
 
-            CfgTest.Get().Load();
-            Console.WriteLine(CfgTest.Get().ToString());
+            csvTest.Get().Load();
+            Console.WriteLine(csvTest.Get().PrintTable());
 
-            CfgTest1.Get().Load();
-            Console.WriteLine(CfgTest1.Get().ToString());
+            csvTest1.Get().Load();
+            Console.WriteLine(csvTest1.Get().PrintTable());
+
+            Console.WriteLine(string.Join(",", csvTest2.Query(0, 0, 0).float_arr));
 
             Console.ReadKey();
         }

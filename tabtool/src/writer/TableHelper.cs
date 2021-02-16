@@ -2,14 +2,10 @@
 using System.IO;
 using System.Collections.Generic;
 using System.Text;
-using System.Threading.Tasks;
-using System.Collections;
 using NPOI.SS.UserModel;
-using NPOI.HSSF.UserModel;
 using NPOI.XSSF.UserModel;
-using NPOI.SS.Formula.Functions;
 
-namespace tabtool
+namespace Saro.Table
 {
     public class TableHelper
     {
@@ -88,7 +84,7 @@ namespace tabtool
                 var keyCell = row.GetCell(1);
                 if ((keyCell == null || string.IsNullOrEmpty(keyCell.ToString())))
                 {
-                    Console.WriteLine($"key [{i + 1}B] is null or empty. break.");
+                    //Console.WriteLine($"key [{i + 1}B] is null or empty. break.");
                     break;
                 }
 
@@ -162,7 +158,7 @@ namespace tabtool
         {
             if (sheet != null)
             {
-                foreach (var name in InValidSheetNames)
+                foreach (var name in s_InValidSheetNames)
                 {
                     if (sheet.SheetName.Contains(name))
                     {
@@ -192,7 +188,7 @@ namespace tabtool
         /// </summary>
         /// <param name="data"></param>
         /// <param name="path"></param>
-        internal void WriteByteAsset(in ExcelData data, string path)
+        internal void WriteByteAsset(ExcelData data, string path)
         {
             using (FileStream fs = new FileStream(path, FileMode.Create, FileAccess.Write))
             {
@@ -201,9 +197,14 @@ namespace tabtool
                 bw.Write(ExcelData.k_DataVersion);
                 bw.Write(data.rowValues.Count);//行数据长度
 
+                var keys = new List<int>();
+
                 for (int i = 0; i < data.rowValues.Count; i++)
                 {
                     var line = data.rowValues[i];
+
+                    keys.Clear();
+
                     for (int j = 0; j < data.header.Count; j++)
                     {
                         if (IgnoreHeader(data.header[j])) continue;
@@ -221,7 +222,15 @@ namespace tabtool
                         else if (t == typeof(int))
                         {
                             var res = int.TryParse(line[j], out int val);
-                            if (res) bw.Write(val);
+                            if (res)
+                            {
+                                bw.Write(val);
+                                
+                                if (IsKey(data.header[j]))
+                                {
+                                    keys.Add(val);
+                                }
+                            }
                         }
                         else if (t == typeof(long))
                         {
@@ -319,6 +328,27 @@ namespace tabtool
                             }
                         }
                     }
+
+                    if (keys.Count < 1)
+                    {
+                        throw new Exception("at least 1 key");
+                    }
+                    else if (keys.Count > 4)
+                    {
+                        throw new Exception("only support 4 keys");
+                    }
+
+                    ulong combinedKey = 0ul;
+                    if (keys.Count == 1)
+                        combinedKey = KeyHelper.GetKey(keys[0]);
+                    else if (keys.Count == 2)
+                        combinedKey = KeyHelper.GetKey(keys[0], keys[1]);
+                    else if (keys.Count == 3)
+                        combinedKey = KeyHelper.GetKey(keys[0], keys[1], keys[2]);
+                    else if (keys.Count == 4)
+                        combinedKey = KeyHelper.GetKey(keys[0], keys[1], keys[2], keys[3]);
+
+                    bw.Write(combinedKey);
                 }
                 bw.Close();
             }
@@ -336,10 +366,16 @@ namespace tabtool
                 return $"{((char)(mod + 65))}";
         }
 
+        internal static bool IsKey(ExcelData.Header header)
+        {
+            return string.CompareOrdinal(header.define, TableHelper.HeaderFilter.k_KEY) == 0;
+        }
+
         internal static bool IgnoreHeader(ExcelData.Header header)
         {
             // ignore del & enum~key
-            return (header.define == TableHelper.HeaderFilter.k_DEL || header.define == TableHelper.HeaderFilter.k_ENUM_KEY);
+            return string.CompareOrdinal(header.define, TableHelper.HeaderFilter.k_DEL) == 0 ||
+                string.CompareOrdinal(header.define, TableHelper.HeaderFilter.k_ENUM_KEY) == 0;
         }
 
         internal static Dictionary<string, Type> s_TypeLut = new Dictionary<string, Type>
@@ -358,7 +394,7 @@ namespace tabtool
             // add more
         };
 
-        internal static string[] InValidSheetNames = new string[]
+        internal static string[] s_InValidSheetNames = new string[]
         {
             "Sheet",
             "sheet"
@@ -366,6 +402,7 @@ namespace tabtool
 
         internal class HeaderFilter
         {
+            public const string k_KEY = "key";
             public const string k_DEL = "del";
             public const string k_CLIENT = "client";
             public const string k_SERVER = "server";

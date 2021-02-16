@@ -1,26 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.IO;
 using System.CodeDom;
 using Microsoft.CSharp;
 using System.CodeDom.Compiler;
 
-namespace tabtool
+namespace Saro.Table
 {
     class CodeGen
     {
         internal static void MakeCsharpFile(List<ExcelData> excelDatas, string codepath)
         {
-            const string k_CsFileName = "CfgData.cs";
+            const string k_CsFileName = "CsvData.cs";
             string csfile = codepath + k_CsFileName;
 
             var sb = new StringBuilder(2048);
 
             var unit = new CodeCompileUnit();
-            var tableNamespace = new CodeNamespace("tabtool");
+            var tableNamespace = new CodeNamespace("Saro.Table");
             unit.Namespaces.Add(tableNamespace);
             tableNamespace.Imports.Add(new CodeNamespaceImport("System.Collections"));
             tableNamespace.Imports.Add(new CodeNamespaceImport("System.Collections.Generic"));
@@ -34,7 +32,8 @@ namespace tabtool
 
                 #region item class
 
-                var itemClass = new CodeTypeDeclaration(meta.GetItemName());
+                var itemClass = new CodeTypeDeclaration(meta.GetEntityClassName());
+                itemClass.TypeAttributes = System.Reflection.TypeAttributes.Public | System.Reflection.TypeAttributes.Sealed;
                 tableNamespace.Types.Add(itemClass);
 
                 int index = -1;
@@ -65,8 +64,9 @@ namespace tabtool
 
                 #region table class
 
-                var tableClass = new CodeTypeDeclaration(meta.GetClassName());
-                tableClass.BaseTypes.Add(new CodeTypeReference("TableBase", new CodeTypeReference[] { new CodeTypeReference(meta.GetItemName()), new CodeTypeReference(meta.GetClassName()) }));
+                var tableClass = new CodeTypeDeclaration(meta.GetWrapperClassName());
+                tableClass.TypeAttributes = System.Reflection.TypeAttributes.Public | System.Reflection.TypeAttributes.Sealed;
+                tableClass.BaseTypes.Add(new CodeTypeReference("BaseTable", new CodeTypeReference[] { new CodeTypeReference(meta.GetEntityClassName()), new CodeTypeReference(meta.GetWrapperClassName()) }));
                 tableNamespace.Types.Add(tableClass);
 
                 #region loadmethod
@@ -77,6 +77,7 @@ namespace tabtool
                 loadMethod.ReturnType = new CodeTypeReference(typeof(bool));
                 loadMethod.Attributes = MemberAttributes.Override | MemberAttributes.Public;
 
+                sb.AppendLine("\t\t\tif (m_Loaded) return true;");
                 sb.AppendLine($"\t\t\tvar bytes = GetBytes(\"{meta.tablName}.txt\");");
                 sb.AppendLine();
                 sb.AppendLine("\t\t\tusing (var ms = new MemoryStream(bytes))");
@@ -87,7 +88,7 @@ namespace tabtool
                 sb.AppendLine("\t\t\t\t\tvar dataLen = br.ReadInt32();");
                 sb.AppendLine("\t\t\t\t\tfor (int i = 0; i < dataLen; i++)");
                 sb.AppendLine("\t\t\t\t\t{");
-                sb.AppendLine($"\t\t\t\t\t\tvar data = new {meta.GetItemName()}();");
+                sb.AppendLine($"\t\t\t\t\t\tvar data = new {meta.GetEntityClassName()}();");
                 bool first = true;
                 foreach (var header in meta.header)
                 {
@@ -206,10 +207,12 @@ namespace tabtool
                         sb.AppendLine("\t\t\t\t\t\t}");
                     }
                 }
-                sb.AppendLine($"\t\t\t\t\t\tm_Datas[data.{meta.header[0].fieldName}] = data;");
+                sb.AppendLine("\t\t\t\t\t\tvar _key = br.ReadUInt64();");
+                sb.AppendLine("\t\t\t\t\t\tm_Datas[_key] = data;");
                 sb.AppendLine("\t\t\t\t\t}");
                 sb.AppendLine("\t\t\t\t}");
                 sb.AppendLine("\t\t\t}");
+                sb.AppendLine("\t\t\tm_Loaded = true;");
                 loadMethod.Statements.Add(new CodeSnippetStatement(sb.ToString()));
                 loadMethod.Statements.Add(new CodeMethodReturnStatement(
                     new CodeSnippetExpression("true")));
@@ -217,13 +220,57 @@ namespace tabtool
                 sb.Clear();
                 #endregion
 
-                #region tostring method
+                #region GetTableItem method
 
-                var toStringMethod = new CodeMemberMethod();
-                tableClass.Members.Add(toStringMethod);
-                toStringMethod.Name = "ToString";
-                toStringMethod.ReturnType = new CodeTypeReference(typeof(string));
-                toStringMethod.Attributes = MemberAttributes.Override | MemberAttributes.Public;
+                var keyCount = meta.GetKeyCount();
+                if (keyCount == 1)
+                {
+                    sb.AppendLine($"\t\tpublic static {meta.GetEntityClassName()} Query(int key1)");
+                    sb.AppendLine("\t\t{");
+                    sb.AppendLine("\t\t\tvar key = KeyHelper.GetKey(key1);");
+                }
+                else if (keyCount == 2)
+                {
+                    sb.AppendLine($"\t\tpublic static {meta.GetEntityClassName()} Query(int key1, int key2)");
+                    sb.AppendLine("\t\t{");
+                    sb.AppendLine("\t\t\tvar key = KeyHelper.GetKey(key1, key2);");
+                }
+                else if (keyCount == 3)
+                {
+                    sb.AppendLine($"\t\tpublic static {meta.GetEntityClassName()} Query(int key1, int key2, int key3)");
+                    sb.AppendLine("\t\t{");
+                    sb.AppendLine("\t\t\tvar key = KeyHelper.GetKey(key1, key2, key3);");
+                }
+                else if (keyCount == 4)
+                {
+                    sb.AppendLine($"\t\tpublic static {meta.GetEntityClassName()} Query(int key1, int key2, int key3, int key4)");
+                    sb.AppendLine("\t\t{");
+                    sb.AppendLine("\t\t\tvar key = KeyHelper.GetKey(key1, key2, key3, key4);");
+                }
+
+                sb.AppendLine($"\t\t\tif (!Get().Load()) throw new System.Exception(\"load table failed.type: \" + nameof({meta.GetEntityClassName()}));");
+                sb.AppendLine($"\t\t\tif (Get().m_Datas.TryGetValue(key, out {meta.GetEntityClassName()} t))");
+                sb.AppendLine("\t\t\t{");
+                sb.AppendLine("\t\t\t\treturn t;");
+                sb.AppendLine("\t\t\t}");
+                sb.AppendLine($"\t\t\tthrow new System.Exception(\"null table. type: \" + nameof({meta.GetEntityClassName()}));");
+                sb.AppendLine("\t\t}");
+
+                var queryMethod = new CodeSnippetTypeMember(sb.ToString());
+
+                tableClass.Members.Add(queryMethod);
+
+                sb.Clear();
+
+                #endregion
+
+                #region PrintTable method
+
+                var printTableMethod = new CodeMemberMethod();
+                tableClass.Members.Add(printTableMethod);
+                printTableMethod.Name = "PrintTable";
+                printTableMethod.ReturnType = new CodeTypeReference(typeof(string));
+                printTableMethod.Attributes = MemberAttributes.Final | MemberAttributes.Public;
 
                 sb.AppendLine("\t\t\tvar sb = new StringBuilder(1024);");
                 sb.AppendLine("\t\t\tforeach (var data in m_Datas.Values)");
@@ -260,8 +307,8 @@ namespace tabtool
                 sb.AppendLine("\t\t\t\tsb.AppendLine();");
                 sb.AppendLine("\t\t\t}");
 
-                toStringMethod.Statements.Add(new CodeSnippetStatement(sb.ToString()));
-                toStringMethod.Statements.Add(new CodeMethodReturnStatement(
+                printTableMethod.Statements.Add(new CodeSnippetStatement(sb.ToString()));
+                printTableMethod.Statements.Add(new CodeMethodReturnStatement(
                     new CodeSnippetExpression("sb.ToString()")));
 
                 sb.Clear();

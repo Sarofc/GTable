@@ -1,32 +1,29 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace tabtool
+namespace Saro.Table
 {
     class CmdlineHelper
     {
         public CmdlineHelper(string[] args)
         {
-            m_args = args;
+            m_Args = args;
         }
 
-        string[] m_args;
+        string[] m_Args;
 
         public bool Has(string s)
         {
-            return m_args.Count(p => p == s) > 0;
+            return m_Args.Count(p => p == s) > 0;
         }
 
         public string Get(string s)
         {
-            for(int i = 0; i < m_args.Count(); i++)
+            for(int i = 0; i < m_Args.Count(); i++)
             {
-                if (m_args[i] == s && i + 1 < m_args.Count())
+                if (m_Args[i] == s && i + 1 < m_Args.Count())
                 {
-                    return m_args[i + 1];
+                    return m_Args[i + 1];
                 }
             }
             return null;
