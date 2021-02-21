@@ -4,7 +4,7 @@ echo copy tables folder to unity project
 
 set TABLETOOL_NAME=tables
 set TABLETOOL_PATH=..\%TABLETOOL_NAME%
-set UNITY_PROJECT_PATH=..\..\DNF-Unity\%TABLETOOL_NAME%
+set UNITY_PROJECT_PATH=..\..\daxihua-Unity\%TABLETOOL_NAME%
 
 REM echo %TABLETOOL_PATH%
 REM echo %UNITY_PROJECT_PATH%
