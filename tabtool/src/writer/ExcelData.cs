@@ -7,27 +7,52 @@ namespace Saro.Table
 {
     internal class ExcelData
     {
-        public const int k_DataVersion = 1;
-
         public string tablName;
         public List<Header> header;
         public List<List<string>> rowValues;
 
-        private static HashSet<string> s_Set = new HashSet<string>();
+        private static readonly HashSet<string> s_Set = new HashSet<string>();
 
+        /// <summary>
+        /// key的个数
+        /// </summary>
+        /// <returns></returns>
         internal int GetKeyCount() => header.Count(h => TableHelper.IsKey(h));
+
+        /// <summary>
+        /// key的字段名称
+        /// </summary>
+        /// <returns></returns>
+        internal List<string> GetKeyNames()
+        {
+            var ret = new List<string>();
+            foreach (var h in header)
+            {
+                if (TableHelper.IsKey(h))
+                {
+                    ret.Add(h.fieldName);
+                }
+            }
+            return ret;
+        }
 
         /// <summary>
         /// 字段名是否重复
         /// </summary>
         /// <returns></returns>
-        internal bool FieldNameDuplicated()
+        internal bool FieldNameDuplicated(out string duplicatedString)
         {
             s_Set.Clear();
 
+            duplicatedString = null;
+
             foreach (var h in header)
             {
-                if (s_Set.Contains(h.fieldName)) return true;
+                if (s_Set.Contains(h.fieldName))
+                {
+                    duplicatedString = h.fieldName;
+                    return true;
+                }
                 s_Set.Add(h.fieldName);
             }
 

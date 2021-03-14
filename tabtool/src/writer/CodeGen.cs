@@ -85,6 +85,7 @@ namespace Saro.Table
                 sb.AppendLine("\t\t\t\tusing (var br = new BinaryReader(ms))");
                 sb.AppendLine("\t\t\t\t{");
                 sb.AppendLine("\t\t\t\t\tvar version = br.ReadInt32();//version");
+                sb.AppendLine("\t\t\t\t\tif (version != TableCfg.k_DataVersion)\n\t\t\t\t\t\tthrow new System.Exception($\"error version. file:{version}  exe:{TableCfg.k_DataVersion}\");\n");
                 sb.AppendLine("\t\t\t\t\tvar dataLen = br.ReadInt32();");
                 sb.AppendLine("\t\t\t\t\tfor (int i = 0; i < dataLen; i++)");
                 sb.AppendLine("\t\t\t\t\t{");
@@ -223,33 +224,35 @@ namespace Saro.Table
                 #region GetTableItem method
 
                 var keyCount = meta.GetKeyCount();
+                var keyNames = meta.GetKeyNames();
+                var combinedKeyName = "__combinedkey";
                 if (keyCount == 1)
                 {
-                    sb.AppendLine($"\t\tpublic static {meta.GetEntityClassName()} Query(int key1)");
+                    sb.AppendLine($"\t\tpublic static {meta.GetEntityClassName()} Query(int {keyNames[0]})");
                     sb.AppendLine("\t\t{");
-                    sb.AppendLine("\t\t\tvar key = KeyHelper.GetKey(key1);");
+                    sb.AppendLine($"\t\t\tvar {combinedKeyName} = KeyHelper.GetKey({keyNames[0]});");
                 }
                 else if (keyCount == 2)
                 {
-                    sb.AppendLine($"\t\tpublic static {meta.GetEntityClassName()} Query(int key1, int key2)");
+                    sb.AppendLine($"\t\tpublic static {meta.GetEntityClassName()} Query(int {keyNames[0]}, int {keyNames[1]})");
                     sb.AppendLine("\t\t{");
-                    sb.AppendLine("\t\t\tvar key = KeyHelper.GetKey(key1, key2);");
+                    sb.AppendLine($"\t\t\tvar {combinedKeyName} = KeyHelper.GetKey({keyNames[0]}, {keyNames[1]});");
                 }
                 else if (keyCount == 3)
                 {
-                    sb.AppendLine($"\t\tpublic static {meta.GetEntityClassName()} Query(int key1, int key2, int key3)");
+                    sb.AppendLine($"\t\tpublic static {meta.GetEntityClassName()} Query(int {keyNames[0]}, int {keyNames[1]}, int {keyNames[2]})");
                     sb.AppendLine("\t\t{");
-                    sb.AppendLine("\t\t\tvar key = KeyHelper.GetKey(key1, key2, key3);");
+                    sb.AppendLine($"\t\t\tvar {combinedKeyName} = KeyHelper.GetKey({keyNames[0]}, {keyNames[1]}, {keyNames[2]});");
                 }
                 else if (keyCount == 4)
                 {
-                    sb.AppendLine($"\t\tpublic static {meta.GetEntityClassName()} Query(int key1, int key2, int key3, int key4)");
+                    sb.AppendLine($"\t\tpublic static {meta.GetEntityClassName()} Query(int {keyNames[0]}, int {keyNames[1]}, int {keyNames[2]}, int {keyNames[3]})");
                     sb.AppendLine("\t\t{");
-                    sb.AppendLine("\t\t\tvar key = KeyHelper.GetKey(key1, key2, key3, key4);");
+                    sb.AppendLine($"\t\t\tvar {combinedKeyName} = KeyHelper.GetKey({keyNames[0]}, {keyNames[1]}, {keyNames[2]}, {keyNames[3]});");
                 }
 
                 sb.AppendLine($"\t\t\tif (!Get().Load()) throw new System.Exception(\"load table failed.type: \" + nameof({meta.GetEntityClassName()}));");
-                sb.AppendLine($"\t\t\tif (Get().m_Datas.TryGetValue(key, out {meta.GetEntityClassName()} t))");
+                sb.AppendLine($"\t\t\tif (Get().m_Datas.TryGetValue({combinedKeyName}, out {meta.GetEntityClassName()} t))");
                 sb.AppendLine("\t\t\t{");
                 sb.AppendLine("\t\t\t\treturn t;");
                 sb.AppendLine("\t\t\t}");

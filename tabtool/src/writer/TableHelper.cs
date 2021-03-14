@@ -75,6 +75,11 @@ namespace Saro.Table
                 data.header.RemoveAt(data.header.Count - 1);
             }
 
+            if (data.FieldNameDuplicated(out var duplicated))
+            {
+                throw new Exception("duplicate fieldName: " + duplicated);
+            }
+
             //Console.WriteLine("CellNum: " + cellNum + "  NameRowNum: " + nameRow.LastCellNum);
 
             data.rowValues = new List<List<string>>(cellNum);
@@ -194,7 +199,7 @@ namespace Saro.Table
             {
                 BinaryWriter bw = new BinaryWriter(fs, Encoding.UTF8);
 
-                bw.Write(ExcelData.k_DataVersion);
+                bw.Write(TableCfg.k_DataVersion);
                 bw.Write(data.rowValues.Count);//行数据长度
 
                 var keys = new List<int>();
@@ -225,7 +230,7 @@ namespace Saro.Table
                             if (res)
                             {
                                 bw.Write(val);
-                                
+
                                 if (IsKey(data.header[j]))
                                 {
                                     keys.Add(val);
@@ -407,6 +412,7 @@ namespace Saro.Table
             public const string k_CLIENT = "client";
             public const string k_SERVER = "server";
             public const string k_ENUM_KEY = "enum~key";
+            public const string k_Translate = "translate";
         }
     }
 }

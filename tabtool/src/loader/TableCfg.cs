@@ -4,6 +4,8 @@ namespace Saro.Table
 {
     public sealed class TableCfg
     {
+        public const int k_DataVersion = 2;
+
         /// <summary>
         /// 数据表加载路径
         /// </summary>
