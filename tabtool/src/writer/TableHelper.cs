@@ -43,21 +43,29 @@ namespace Saro.Table
                 }
                 else
                 {
-                    Console.WriteLine($"Sheet [{sheet.SheetName}] cell is null at: [{4}{ConvertIntToOrderedLetter(index)}]");
+                    //Console.WriteLine($"Sheet [{sheet.SheetName}] cell is null at: [{4}{ConvertIntToOrderedLetter(index)}]");
                     break;
                 }
 
                 cell = defineRow.GetCell(index);
                 if (cell != null)
+                {
                     data.header[index - 1].define = (cell.ToString());
+                }
                 else
-                    Console.WriteLine($"Sheet [{sheet.SheetName}] cell is null at: [{1}{ConvertIntToOrderedLetter(index)}]");
+                {
+                    //Console.WriteLine($"Sheet [{sheet.SheetName}] cell is null at: [{1}{ConvertIntToOrderedLetter(index)}]");
+                }
 
                 cell = commentRow.GetCell(index);
                 if (cell != null)
+                {
                     data.header[index - 1].fieldComment = (cell.ToString());
+                }
                 else
-                    Console.WriteLine($"Sheet [{sheet.SheetName}] cell is null at: [{2}{ConvertIntToOrderedLetter(index)}]");
+                {
+                    //Console.WriteLine($"Sheet [{sheet.SheetName}] cell is null at: [{2}{ConvertIntToOrderedLetter(index)}]");
+                }
 
                 cell = typeRow.GetCell(index);
                 if (cell != null)
@@ -65,7 +73,9 @@ namespace Saro.Table
                     data.header[index - 1].fieldTypeName = (cell.ToString());
                 }
                 else
-                    Console.WriteLine($"Sheet [{sheet.SheetName}] cell is null at: [{3}{ConvertIntToOrderedLetter(index)}]");
+                {
+                    //Console.WriteLine($"Sheet [{sheet.SheetName}] cell is null at: [{3}{ConvertIntToOrderedLetter(index)}]");
+                }
             }
 
             cellNum = index - 1;
@@ -102,7 +112,7 @@ namespace Saro.Table
                     if (cell == null)
                     {
                         data.rowValues[i - 4].Add(string.Empty);
-                        Console.WriteLine($"Sheet [{sheet.SheetName}] cell is null at: [{i + 1}{ConvertIntToOrderedLetter(i)}]");
+                        //Console.WriteLine($"Sheet [{sheet.SheetName}] cell is null at: [{i + 1}{ConvertIntToOrderedLetter(i)}]");
 
                     }
                     else
@@ -221,31 +231,37 @@ namespace Saro.Table
 
                         if (t == typeof(byte))
                         {
-                            var res = byte.TryParse(line[j], out byte val);
-                            if (res) bw.Write(val);
+                            byte.TryParse(line[j], out byte val);
+                            bw.Write(val);
                         }
                         else if (t == typeof(int))
                         {
                             var res = int.TryParse(line[j], out int val);
-                            if (res)
-                            {
-                                bw.Write(val);
+                            bw.Write(val);
 
-                                if (IsKey(data.header[j]))
-                                {
-                                    keys.Add(val);
-                                }
+                            if (IsKey(data.header[j]))
+                            {
+                                if (!res)
+                                    throw new Exception($"write {t} failed.");
+
+                                keys.Add(val);
                             }
                         }
                         else if (t == typeof(long))
                         {
                             var res = long.TryParse(line[j], out long val);
-                            if (res) bw.Write(val);
+                            bw.Write(val);
+
+                            if (!string.IsNullOrEmpty(line[j]) && !res)
+                                throw new Exception($"write {t} failed.");
                         }
                         else if (t == typeof(float))
                         {
                             var res = float.TryParse(line[j], out float val);
-                            if (res) bw.Write(val);
+                            bw.Write(val);
+
+                            if (!string.IsNullOrEmpty(line[j]) && !res)
+                                throw new Exception($"write {t} failed.");
                         }
                         else if (t == typeof(string))
                         {
@@ -258,12 +274,15 @@ namespace Saro.Table
                                 bw.Write((ushort)0);
                                 continue;
                             }
-                            var bvs = line[j].Split(',');
-                            bw.Write((ushort)bvs.Length);//长度
-                            for (ushort i1 = 0; i1 < bvs.Length; i1++)
+                            var arr = line[j].Split(',');
+                            bw.Write((ushort)arr.Length);//长度
+                            for (ushort i1 = 0; i1 < arr.Length; i1++)
                             {
-                                var res = byte.TryParse(bvs[i1].Trim(), out byte val);
-                                if (res) bw.Write(val);
+                                var res = byte.TryParse(arr[i1].Trim(), out byte val);
+                                bw.Write(val);
+
+                                if (!string.IsNullOrEmpty(arr[j]) && !res)
+                                    throw new Exception($"write {t} {arr[j]} failed.");
                             }
                         }
                         else if (t == typeof(List<int>))
@@ -273,12 +292,15 @@ namespace Saro.Table
                                 bw.Write((ushort)0);
                                 continue;
                             }
-                            var ivs = line[j].Split(',');
-                            bw.Write((ushort)ivs.Length);//长度
-                            for (ushort i1 = 0; i1 < ivs.Length; i1++)
+                            var arr = line[j].Split(',');
+                            bw.Write((ushort)arr.Length);//长度
+                            for (ushort i1 = 0; i1 < arr.Length; i1++)
                             {
-                                var res = int.TryParse(ivs[i1].Trim(), out int val);
-                                if (res) bw.Write(val);
+                                var res = int.TryParse(arr[i1].Trim(), out int val);
+                                bw.Write(val);
+
+                                if (!string.IsNullOrEmpty(arr[j]) && !res)
+                                    throw new Exception($"write {t} {arr[j]} failed.");
                             }
                         }
                         else if (t == typeof(List<long>))
@@ -288,12 +310,15 @@ namespace Saro.Table
                                 bw.Write((ushort)0);
                                 continue;
                             }
-                            var lvs = line[j].Split(',');
-                            bw.Write((ushort)lvs.Length);//长度
-                            for (ushort i1 = 0; i1 < lvs.Length; i1++)
+                            var arr = line[j].Split(',');
+                            bw.Write((ushort)arr.Length);//长度
+                            for (ushort i1 = 0; i1 < arr.Length; i1++)
                             {
-                                var res = long.TryParse(lvs[i1].Trim(), out long val);
-                                if (res) bw.Write(val);
+                                var res = long.TryParse(arr[i1].Trim(), out long val);
+                                bw.Write(val);
+
+                                if (!string.IsNullOrEmpty(arr[j]) && !res)
+                                    throw new Exception($"write {t} {arr[j]} failed.");
                             }
                         }
                         else if (t == typeof(List<float>))
@@ -303,12 +328,15 @@ namespace Saro.Table
                                 bw.Write((ushort)0);
                                 continue;
                             }
-                            var fvs = line[j].Split(',');
-                            bw.Write((ushort)fvs.Length);//长度
-                            for (ushort i1 = 0; i1 < fvs.Length; i1++)
+                            var arr = line[j].Split(',');
+                            bw.Write((ushort)arr.Length);//长度
+                            for (ushort i1 = 0; i1 < arr.Length; i1++)
                             {
-                                var res = float.TryParse(fvs[i1].Trim(), out float val);
-                                if (res) bw.Write(val);
+                                var res = float.TryParse(arr[i1].Trim(), out float val);
+                                bw.Write(val);
+
+                                if (!string.IsNullOrEmpty(arr[j]) && !res)
+                                    throw new Exception($"write {t} {arr[j]} failed.");
                             }
                         }
                         else if (t == typeof(Dictionary<int, int>))
@@ -318,18 +346,23 @@ namespace Saro.Table
                                 bw.Write((ushort)0);
                                 continue;
                             }
-                            var ivp = line[j].Split(',');
-                            bw.Write((ushort)ivp.Length);//长度
-                            for (ushort i1 = 0; i1 < ivp.Length; i1++)
+                            var arr = line[j].Split(',');
+                            bw.Write((ushort)arr.Length);//长度
+                            for (ushort i1 = 0; i1 < arr.Length; i1++)
                             {
-                                var pair = ivp[i1].Split('|');
+                                var pair = arr[i1].Split('|');
                                 if (pair.Length != 2) throw new Exception("Dictionary<int,int> parse error.Required format [int|int]");
 
                                 var res = int.TryParse(pair[0].Trim(), out int key);
                                 var res1 = int.TryParse(pair[1].Trim(), out int val);
+                                bw.Write(key);
+                                bw.Write(val);
 
-                                if (res) bw.Write(key);
-                                if (res1) bw.Write(val);
+                                if (!string.IsNullOrEmpty(pair[0]) && !res)
+                                    throw new Exception($"write {t} {pair[0]} failed.");
+
+                                if (!string.IsNullOrEmpty(pair[1]) && !res1)
+                                    throw new Exception($"write {t} {pair[1]} failed.");
                             }
                         }
                     }
@@ -340,7 +373,7 @@ namespace Saro.Table
                     }
                     else if (keys.Count > 4)
                     {
-                        throw new Exception("only support 4 keys");
+                        throw new Exception("more than 4 keys is not supportted");
                     }
 
                     ulong combinedKey = 0ul;

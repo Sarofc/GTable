@@ -2,7 +2,7 @@
 
 echo copy tables folder to unity project
 
-set UNITY_PROJECT_PATH=..\..\mota-unity
+set UNITY_PROJECT_PATH=..\..\souls
 
 set TABLETOOL_NAME=tables
 set TABLETOOL_PATH=..\%TABLETOOL_NAME%

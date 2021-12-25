@@ -48,6 +48,8 @@ namespace Saro.Table
 
             foreach (var h in header)
             {
+                if (TableHelper.IgnoreHeader(h)) continue;
+
                 if (s_Set.Contains(h.fieldName))
                 {
                     duplicatedString = h.fieldName;
