@@ -263,6 +263,14 @@ namespace Saro.Table
                             if (!string.IsNullOrEmpty(line[j]) && !res)
                                 throw new Exception($"write {t} failed.");
                         }
+                        else if (t == typeof(bool))
+                        {
+                            var res = bool.TryParse(line[j], out bool val);
+                            bw.Write(val);
+
+                            if (!string.IsNullOrEmpty(line[j]) && !res)
+                                throw new Exception($"write {t} failed.");
+                        }
                         else if (t == typeof(string))
                         {
                             bw.Write(line[j]);
@@ -422,6 +430,7 @@ namespace Saro.Table
             {"int", typeof(int) },
             {"long", typeof(long) },
             {"float", typeof(float) },
+            {"bool", typeof(bool) },
             {"byte+", typeof(List<byte>) },
             {"int+", typeof(List<int>) },
             {"long+", typeof(List<long>) },

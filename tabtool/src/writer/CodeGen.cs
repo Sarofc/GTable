@@ -115,6 +115,10 @@ namespace Saro.Table
                     {
                         sb.AppendLine($"\t\t\t\t\t\tdata.{header.fieldName} = br.ReadSingle();");
                     }
+                    else if(t == typeof(bool))
+                    {
+                        sb.AppendLine($"\t\t\t\t\t\tdata.{header.fieldName} = br.ReadBoolean();");
+                    }
                     else if (t == typeof(string))
                     {
                         sb.AppendLine($"\t\t\t\t\t\tdata.{header.fieldName} = br.ReadString();");
