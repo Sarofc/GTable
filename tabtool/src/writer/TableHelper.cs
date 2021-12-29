@@ -275,7 +275,7 @@ namespace Saro.Table
                         {
                             bw.Write(line[j]);
                         }
-                        else if (t == typeof(List<byte>))
+                        else if (t == typeof(byte[]))
                         {
                             if (string.IsNullOrEmpty(line[j]))
                             {
@@ -293,7 +293,7 @@ namespace Saro.Table
                                     throw new Exception($"write {t} {arr[j]} failed.");
                             }
                         }
-                        else if (t == typeof(List<int>))
+                        else if (t == typeof(int[]))
                         {
                             if (string.IsNullOrEmpty(line[j]))
                             {
@@ -311,7 +311,7 @@ namespace Saro.Table
                                     throw new Exception($"write {t} {arr[j]} failed.");
                             }
                         }
-                        else if (t == typeof(List<long>))
+                        else if (t == typeof(long[]))
                         {
                             if (string.IsNullOrEmpty(line[j]))
                             {
@@ -329,7 +329,7 @@ namespace Saro.Table
                                     throw new Exception($"write {t} {arr[j]} failed.");
                             }
                         }
-                        else if (t == typeof(List<float>))
+                        else if (t == typeof(float[]))
                         {
                             if (string.IsNullOrEmpty(line[j]))
                             {
@@ -431,10 +431,10 @@ namespace Saro.Table
             {"long", typeof(long) },
             {"float", typeof(float) },
             {"bool", typeof(bool) },
-            {"byte+", typeof(List<byte>) },
-            {"int+", typeof(List<int>) },
-            {"long+", typeof(List<long>) },
-            {"float+", typeof(List<float>) },
+            {"byte+", typeof(byte[]) },
+            {"int+", typeof(int[]) },
+            {"long+", typeof(long[]) },
+            {"float+", typeof(float[]) },
             {"string", typeof(string) },
             {"[int|int]",typeof(Dictionary<int,int>) },
 

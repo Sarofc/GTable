@@ -115,7 +115,7 @@ namespace Saro.Table
                     {
                         sb.AppendLine($"\t\t\t\t\t\tdata.{header.fieldName} = br.ReadSingle();");
                     }
-                    else if(t == typeof(bool))
+                    else if (t == typeof(bool))
                     {
                         sb.AppendLine($"\t\t\t\t\t\tdata.{header.fieldName} = br.ReadBoolean();");
                     }
@@ -124,7 +124,7 @@ namespace Saro.Table
                         sb.AppendLine($"\t\t\t\t\t\tdata.{header.fieldName} = br.ReadString();");
 
                     }
-                    else if (t == typeof(List<byte>))
+                    else if (t == typeof(byte[]))
                     {
                         if (first)
                         {
@@ -135,13 +135,13 @@ namespace Saro.Table
                         {
                             sb.AppendLine($"\t\t\t\t\t\tlen = br.ReadUInt16();");
                         }
-                        sb.AppendLine($"\t\t\t\t\t\tdata.{header.fieldName} = new List<byte>(len);");
+                        sb.AppendLine($"\t\t\t\t\t\tdata.{header.fieldName} = new byte[len];");
                         sb.AppendLine($"\t\t\t\t\t\tfor (int j = 0; j < len; j++)");
                         sb.AppendLine("\t\t\t\t\t\t{");
-                        sb.AppendLine($"\t\t\t\t\t\t\tdata.{header.fieldName}.Add(br.ReadByte());");
+                        sb.AppendLine($"\t\t\t\t\t\t\tdata.{header.fieldName}[j] = br.ReadByte();");
                         sb.AppendLine("\t\t\t\t\t\t}");
                     }
-                    else if (t == typeof(List<int>))
+                    else if (t == typeof(int[]))
                     {
                         if (first)
                         {
@@ -152,13 +152,13 @@ namespace Saro.Table
                         {
                             sb.AppendLine($"\t\t\t\t\t\tlen = br.ReadUInt16();");
                         }
-                        sb.AppendLine($"\t\t\t\t\t\tdata.{header.fieldName} = new List<int>(len);");
+                        sb.AppendLine($"\t\t\t\t\t\tdata.{header.fieldName} = new int[len];");
                         sb.AppendLine($"\t\t\t\t\t\tfor (int j = 0; j < len; j++)");
                         sb.AppendLine("\t\t\t\t\t\t{");
-                        sb.AppendLine($"\t\t\t\t\t\t\tdata.{header.fieldName}.Add(br.ReadInt32());");
+                        sb.AppendLine($"\t\t\t\t\t\t\tdata.{header.fieldName}[j] = br.ReadInt32();");
                         sb.AppendLine("\t\t\t\t\t\t}");
                     }
-                    else if (t == typeof(List<long>))
+                    else if (t == typeof(long[]))
                     {
                         if (first)
                         {
@@ -169,13 +169,13 @@ namespace Saro.Table
                         {
                             sb.AppendLine($"\t\t\t\t\t\tlen = br.ReadUInt16();");
                         }
-                        sb.AppendLine($"\t\t\t\t\t\tdata.{header.fieldName} = new List<long>(len);");
+                        sb.AppendLine($"\t\t\t\t\t\tdata.{header.fieldName} = new long[len];");
                         sb.AppendLine("\t\t\t\t\t\tfor (int j = 0; j < len; j++)");
                         sb.AppendLine("\t\t\t\t\t\t{");
-                        sb.AppendLine($"\t\t\t\t\t\t\tdata.{header.fieldName}.Add(br.ReadInt64());");
+                        sb.AppendLine($"\t\t\t\t\t\t\tdata.{header.fieldName}[j] = br.ReadInt64();");
                         sb.AppendLine("\t\t\t\t\t\t}");
                     }
-                    else if (t == typeof(List<float>))
+                    else if (t == typeof(float[]))
                     {
                         if (first)
                         {
@@ -186,10 +186,10 @@ namespace Saro.Table
                         {
                             sb.AppendLine($"\t\t\t\t\t\tlen = br.ReadUInt16();");
                         }
-                        sb.AppendLine($"\t\t\t\t\t\tdata.{header.fieldName} = new List<float>(len);");
+                        sb.AppendLine($"\t\t\t\t\t\tdata.{header.fieldName} = new float[len];");
                         sb.AppendLine("\t\t\t\t\t\tfor (int j = 0; j < len; j++)");
                         sb.AppendLine("\t\t\t\t\t\t{");
-                        sb.AppendLine($"\t\t\t\t\t\t\tdata.{header.fieldName}.Add(br.ReadSingle());");
+                        sb.AppendLine($"\t\t\t\t\t\t\tdata.{header.fieldName}[j] = br.ReadSingle();");
                         sb.AppendLine("\t\t\t\t\t\t}");
                     }
                     else if (t == typeof(Dictionary<int, int>))
