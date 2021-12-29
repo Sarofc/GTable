@@ -87,8 +87,6 @@
     <Compile Include="src\writer\ExcelData.cs" />
     <Compile Include="src\writer\Program.cs" />
     <Compile Include="src\writer\TableHelper.cs" />
-    <Compile Include="src\writer\TranslateData.cs" />
-    <Compile Include="src\writer\TranslateHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

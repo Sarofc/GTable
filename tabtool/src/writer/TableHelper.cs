@@ -289,8 +289,8 @@ namespace Saro.Table
                                 var res = byte.TryParse(arr[i1].Trim(), out byte val);
                                 bw.Write(val);
 
-                                if (!string.IsNullOrEmpty(arr[j]) && !res)
-                                    throw new Exception($"write {t} {arr[j]} failed.");
+                                if (!string.IsNullOrEmpty(arr[i1]) && !res)
+                                    throw new Exception($"write {t} {arr[i1]} failed.");
                             }
                         }
                         else if (t == typeof(int[]))
@@ -307,8 +307,8 @@ namespace Saro.Table
                                 var res = int.TryParse(arr[i1].Trim(), out int val);
                                 bw.Write(val);
 
-                                if (!string.IsNullOrEmpty(arr[j]) && !res)
-                                    throw new Exception($"write {t} {arr[j]} failed.");
+                                if (!string.IsNullOrEmpty(arr[i1]) && !res)
+                                    throw new Exception($"write {t} {arr[i1]} failed.");
                             }
                         }
                         else if (t == typeof(long[]))
@@ -325,8 +325,8 @@ namespace Saro.Table
                                 var res = long.TryParse(arr[i1].Trim(), out long val);
                                 bw.Write(val);
 
-                                if (!string.IsNullOrEmpty(arr[j]) && !res)
-                                    throw new Exception($"write {t} {arr[j]} failed.");
+                                if (!string.IsNullOrEmpty(arr[i1]) && !res)
+                                    throw new Exception($"write {t} {arr[i1]} failed.");
                             }
                         }
                         else if (t == typeof(float[]))
@@ -343,8 +343,8 @@ namespace Saro.Table
                                 var res = float.TryParse(arr[i1].Trim(), out float val);
                                 bw.Write(val);
 
-                                if (!string.IsNullOrEmpty(arr[j]) && !res)
-                                    throw new Exception($"write {t} {arr[j]} failed.");
+                                if (!string.IsNullOrEmpty(arr[i1]) && !res)
+                                    throw new Exception($"write {t} {arr[i1]} failed.");
                             }
                         }
                         else if (t == typeof(Dictionary<int, int>))

@@ -279,7 +279,12 @@ namespace Saro.Table
                 printTableMethod.ReturnType = new CodeTypeReference(typeof(string));
                 printTableMethod.Attributes = MemberAttributes.Final | MemberAttributes.Public;
 
-                sb.AppendLine("\t\t\tvar sb = new StringBuilder(1024);");
+                sb.AppendLine("\t\t\tStringBuilder sb = null;");
+
+                sb.AppendLine("#if ENABLE_TABLE_LOG");
+
+                sb.AppendLine("\t\t\tsb = new StringBuilder(2048);");
+
                 sb.AppendLine("\t\t\tforeach (var data in m_Datas.Values)");
                 sb.AppendLine("\t\t\t{");
                 foreach (var header in meta.header)
@@ -291,18 +296,15 @@ namespace Saro.Table
                         throw new Exception("type is not support: " + header.fieldTypeName);
                     }
 
-                    if (t == typeof(byte)
-                        || t == typeof(int)
-                        || t == typeof(long)
-                        || t == typeof(float)
+                    if (t.IsValueType
                         || t == typeof(string))
                     {
                         sb.AppendLine($"\t\t\t\tsb.Append(data.{header.fieldName}).Append(\"\\t\");");
                     }
-                    else if (t == typeof(List<byte>)
-                            || t == typeof(List<int>)
-                            || t == typeof(List<long>)
-                            || t == typeof(List<float>))
+                    else if (t == typeof(byte[])
+                            || t == typeof(int[])
+                            || t == typeof(long[])
+                            || t == typeof(float[]))
                     {
                         sb.AppendLine($"\t\t\t\tsb.Append(string.Join(\",\", data.{header.fieldName})).Append(\"\\t\");");
                     }
@@ -314,11 +316,13 @@ namespace Saro.Table
                 sb.AppendLine("\t\t\t\tsb.AppendLine();");
                 sb.AppendLine("\t\t\t}");
 
+                sb.AppendLine("#endif");
+
                 printTableMethod.Statements.Add(new CodeSnippetStatement(sb.ToString()));
-                printTableMethod.Statements.Add(new CodeMethodReturnStatement(
-                    new CodeSnippetExpression("sb.ToString()")));
+                printTableMethod.Statements.Add(new CodeMethodReturnStatement(new CodeSnippetExpression("sb?.ToString()")));
 
                 sb.Clear();
+
                 #endregion
 
                 #endregion
