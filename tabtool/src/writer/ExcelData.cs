@@ -11,7 +11,7 @@ namespace Saro.Table
         public List<Header> header;
         public List<List<string>> rowValues;
 
-        private static readonly HashSet<string> s_Set = new HashSet<string>();
+        private readonly HashSet<string> m_Set = new HashSet<string>(40);
 
         /// <summary>
         /// key的个数
@@ -42,7 +42,7 @@ namespace Saro.Table
         /// <returns></returns>
         internal bool FieldNameDuplicated(out string duplicatedString)
         {
-            s_Set.Clear();
+            m_Set.Clear();
 
             duplicatedString = null;
 
@@ -50,12 +50,12 @@ namespace Saro.Table
             {
                 if (TableHelper.IgnoreHeader(h)) continue;
 
-                if (s_Set.Contains(h.fieldName))
+                if (m_Set.Contains(h.fieldName))
                 {
                     duplicatedString = h.fieldName;
                     return true;
                 }
-                s_Set.Add(h.fieldName);
+                m_Set.Add(h.fieldName);
             }
 
             return false;
@@ -69,19 +69,21 @@ namespace Saro.Table
             /// <summary>
             /// 定义
             /// </summary>
-            public string define;
+            public string define { get => metas[0]; set => metas[0] = value; }
             /// <summary>
             /// 注释
             /// </summary>
-            public string fieldComment;
-            /// <summary>
-            /// 字段名，唯一
-            /// </summary>
-            public string fieldName;
+            public string fieldComment { get => metas[1]; set => metas[1] = value; }
             /// <summary>
             /// 字段类型
             /// </summary>
-            public string fieldTypeName;
+            public string fieldTypeName { get => metas[2]; set => metas[2] = value; }
+            /// <summary>
+            /// 字段名，唯一
+            /// </summary>
+            public string fieldName { get => metas[3]; set => metas[3] = value; }
+
+            public string[] metas = new string[4];
         }
 
         /// <summary>

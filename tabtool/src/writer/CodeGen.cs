@@ -10,10 +10,12 @@ namespace Saro.Table
 {
     class CodeGen
     {
-        internal static void MakeCsharpFile(List<ExcelData> excelDatas, string codepath)
+        internal static void MakeCsharpFile(IEnumerable<ExcelData> excelDatas, string codepath)
         {
-            const string k_CsFileName = "CsvData.cs";
-            string csfile = codepath + k_CsFileName;
+            //const string k_CsFileName = "CsvData.cs";
+            //string csfile = codepath + k_CsFileName;
+
+            var csfile = codepath;
 
             var sb = new StringBuilder(2048);
 
@@ -26,19 +28,17 @@ namespace Saro.Table
             tableNamespace.Imports.Add(new CodeNamespaceImport("System.Text"));
 
             var enumDefineList = new List<int>();
-            for (int i = 0; i < excelDatas.Count; i++)
+            foreach (var excelData in excelDatas)
             {
-                var meta = excelDatas[i];
-
                 #region item class
 
-                var itemClass = new CodeTypeDeclaration(meta.GetEntityClassName());
+                var itemClass = new CodeTypeDeclaration(excelData.GetEntityClassName());
                 itemClass.TypeAttributes = System.Reflection.TypeAttributes.Public | System.Reflection.TypeAttributes.Sealed;
                 tableNamespace.Types.Add(itemClass);
 
                 int index = -1;
                 enumDefineList.Clear();
-                foreach (var header in meta.header)
+                foreach (var header in excelData.header)
                 {
                     index++;
                     if (header.define == TableHelper.HeaderFilter.k_ENUM_KEY)
@@ -64,9 +64,9 @@ namespace Saro.Table
 
                 #region table class
 
-                var tableClass = new CodeTypeDeclaration(meta.GetWrapperClassName());
+                var tableClass = new CodeTypeDeclaration(excelData.GetWrapperClassName());
                 tableClass.TypeAttributes = System.Reflection.TypeAttributes.Public | System.Reflection.TypeAttributes.Sealed;
-                tableClass.BaseTypes.Add(new CodeTypeReference("BaseTable", new CodeTypeReference[] { new CodeTypeReference(meta.GetEntityClassName()), new CodeTypeReference(meta.GetWrapperClassName()) }));
+                tableClass.BaseTypes.Add(new CodeTypeReference("BaseTable", new CodeTypeReference[] { new CodeTypeReference(excelData.GetEntityClassName()), new CodeTypeReference(excelData.GetWrapperClassName()) }));
                 tableNamespace.Types.Add(tableClass);
 
                 #region loadmethod
@@ -78,7 +78,7 @@ namespace Saro.Table
                 loadMethod.Attributes = MemberAttributes.Override | MemberAttributes.Public;
 
                 sb.AppendLine("\t\t\tif (m_Loaded) return true;");
-                sb.AppendLine($"\t\t\tvar bytes = GetBytes(\"{meta.tablName}.txt\");");
+                sb.AppendLine($"\t\t\tvar bytes = GetBytes(\"{excelData.tablName}.txt\");");
                 sb.AppendLine();
                 sb.AppendLine("\t\t\tusing (var ms = new MemoryStream(bytes))");
                 sb.AppendLine("\t\t\t{");
@@ -89,9 +89,9 @@ namespace Saro.Table
                 sb.AppendLine("\t\t\t\t\tvar dataLen = br.ReadInt32();");
                 sb.AppendLine("\t\t\t\t\tfor (int i = 0; i < dataLen; i++)");
                 sb.AppendLine("\t\t\t\t\t{");
-                sb.AppendLine($"\t\t\t\t\t\tvar data = new {meta.GetEntityClassName()}();");
+                sb.AppendLine($"\t\t\t\t\t\tvar data = new {excelData.GetEntityClassName()}();");
                 bool first = true;
-                foreach (var header in meta.header)
+                foreach (var header in excelData.header)
                 {
                     if (TableHelper.IgnoreHeader(header)) continue;
 
@@ -227,40 +227,40 @@ namespace Saro.Table
 
                 #region GetTableItem method
 
-                var keyCount = meta.GetKeyCount();
-                var keyNames = meta.GetKeyNames();
+                var keyCount = excelData.GetKeyCount();
+                var keyNames = excelData.GetKeyNames();
                 var combinedKeyName = "__combinedkey";
                 if (keyCount == 1)
                 {
-                    sb.AppendLine($"\t\tpublic static {meta.GetEntityClassName()} Query(int {keyNames[0]})");
+                    sb.AppendLine($"\t\tpublic static {excelData.GetEntityClassName()} Query(int {keyNames[0]})");
                     sb.AppendLine("\t\t{");
                     sb.AppendLine($"\t\t\tvar {combinedKeyName} = KeyHelper.GetKey({keyNames[0]});");
                 }
                 else if (keyCount == 2)
                 {
-                    sb.AppendLine($"\t\tpublic static {meta.GetEntityClassName()} Query(int {keyNames[0]}, int {keyNames[1]})");
+                    sb.AppendLine($"\t\tpublic static {excelData.GetEntityClassName()} Query(int {keyNames[0]}, int {keyNames[1]})");
                     sb.AppendLine("\t\t{");
                     sb.AppendLine($"\t\t\tvar {combinedKeyName} = KeyHelper.GetKey({keyNames[0]}, {keyNames[1]});");
                 }
                 else if (keyCount == 3)
                 {
-                    sb.AppendLine($"\t\tpublic static {meta.GetEntityClassName()} Query(int {keyNames[0]}, int {keyNames[1]}, int {keyNames[2]})");
+                    sb.AppendLine($"\t\tpublic static {excelData.GetEntityClassName()} Query(int {keyNames[0]}, int {keyNames[1]}, int {keyNames[2]})");
                     sb.AppendLine("\t\t{");
                     sb.AppendLine($"\t\t\tvar {combinedKeyName} = KeyHelper.GetKey({keyNames[0]}, {keyNames[1]}, {keyNames[2]});");
                 }
                 else if (keyCount == 4)
                 {
-                    sb.AppendLine($"\t\tpublic static {meta.GetEntityClassName()} Query(int {keyNames[0]}, int {keyNames[1]}, int {keyNames[2]}, int {keyNames[3]})");
+                    sb.AppendLine($"\t\tpublic static {excelData.GetEntityClassName()} Query(int {keyNames[0]}, int {keyNames[1]}, int {keyNames[2]}, int {keyNames[3]})");
                     sb.AppendLine("\t\t{");
                     sb.AppendLine($"\t\t\tvar {combinedKeyName} = KeyHelper.GetKey({keyNames[0]}, {keyNames[1]}, {keyNames[2]}, {keyNames[3]});");
                 }
 
-                sb.AppendLine($"\t\t\tif (!Get().Load()) throw new System.Exception(\"load table failed.type: \" + nameof({meta.GetEntityClassName()}));");
-                sb.AppendLine($"\t\t\tif (Get().m_Datas.TryGetValue({combinedKeyName}, out {meta.GetEntityClassName()} t))");
+                sb.AppendLine($"\t\t\tif (!Get().Load()) throw new System.Exception(\"load table failed.type: \" + nameof({excelData.GetEntityClassName()}));");
+                sb.AppendLine($"\t\t\tif (Get().m_Datas.TryGetValue({combinedKeyName}, out {excelData.GetEntityClassName()} t))");
                 sb.AppendLine("\t\t\t{");
                 sb.AppendLine("\t\t\t\treturn t;");
                 sb.AppendLine("\t\t\t}");
-                sb.AppendLine($"\t\t\tthrow new System.Exception(\"null table. type: \" + nameof({meta.GetEntityClassName()}));");
+                sb.AppendLine($"\t\t\tthrow new System.Exception(\"null table. type: \" + nameof({excelData.GetEntityClassName()}));");
                 sb.AppendLine("\t\t}");
 
                 var queryMethod = new CodeSnippetTypeMember(sb.ToString());
@@ -287,7 +287,7 @@ namespace Saro.Table
 
                 sb.AppendLine("\t\t\tforeach (var data in m_Datas.Values)");
                 sb.AppendLine("\t\t\t{");
-                foreach (var header in meta.header)
+                foreach (var header in excelData.header)
                 {
                     if (TableHelper.IgnoreHeader(header)) continue;
 
@@ -331,17 +331,17 @@ namespace Saro.Table
 
                 if (enumDefineList.Count > 0)
                 {
-                    var enumType = new CodeTypeDeclaration(meta.GetEnumName());
+                    var enumType = new CodeTypeDeclaration(excelData.GetEnumName());
                     enumType.IsEnum = true;
                     tableNamespace.Types.Add(enumType);
-                    for (int j = 0; j < meta.rowValues.Count; j++)
+                    for (int j = 0; j < excelData.rowValues.Count; j++)
                     {
                         for (int k = 0; k < enumDefineList.Count; k++)
                         {
-                            sb.Append(meta.rowValues[j][enumDefineList[k]]);
+                            sb.Append(excelData.rowValues[j][enumDefineList[k]]);
                             if (k != enumDefineList.Count - 1) sb.Append("_");
                         }
-                        enumType.Members.Add(new CodeMemberField() { Name = sb.ToString(), InitExpression = new CodePrimitiveExpression(int.Parse(meta.rowValues[j][0])) });
+                        enumType.Members.Add(new CodeMemberField() { Name = sb.ToString(), InitExpression = new CodePrimitiveExpression(int.Parse(excelData.rowValues[j][0])) });
                         sb.Clear();
                     }
                 }
@@ -353,7 +353,7 @@ namespace Saro.Table
             {
                 var provider = new CSharpCodeProvider();
                 tw.WriteLine("//------------------------------------------------------------------------------");
-                tw.WriteLine("// File   : {0}", k_CsFileName);
+                tw.WriteLine("// File   : {0}", Path.GetFileName(codepath));
                 tw.WriteLine("// Author : Saro");
                 tw.WriteLine("// Time   : {0}", DateTime.Now.ToString());
                 tw.WriteLine("//------------------------------------------------------------------------------");

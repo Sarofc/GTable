@@ -1,19 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Saro.Table
 {
     class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
-            Load(args);
+            await Load(args);
         }
 
-        static void Load(string[] args)
+        static async Task Load(string[] args)
         {
-            string clientOutDir, serverOutDir, csOutDir, excelDir;
+            int processorCount = System.Environment.ProcessorCount;
+            ThreadPool.SetMinThreads(Math.Max(4, processorCount), 5);
+            ThreadPool.SetMaxThreads(Math.Max(16, processorCount * 4), 10);
+
+            string clientOutDir = null, serverOutDir = null, csOutDir = null, excelDir = null;
             CmdlineHelper cmder = new CmdlineHelper(args);
             if (cmder.Has("--out_client")) { clientOutDir = cmder.Get("--out_client"); } else { Console.WriteLine("out_client missing"); return; }
             ////if (cmder.Has("--out_server")) { serverOutDir = cmder.Get("--out_server"); } else { return; }
@@ -26,14 +33,20 @@ namespace Saro.Table
             if (!Directory.Exists(clientOutDir)) Directory.CreateDirectory(clientOutDir);
             //if (!Directory.Exists(serverOutDir)) Directory.CreateDirectory(serverOutDir);
 
-            List<ExcelData> clientExcelDataList = new List<ExcelData>();
+            bool gen_client_cs = false;
+            if (cmder.Has("--out_cs"))
+            {
+                csOutDir = cmder.Get("--out_cs");
+                if (!Directory.Exists(csOutDir))
+                    Directory.CreateDirectory(csOutDir);
 
-            //导出文件
-            TableHelper helper = new TableHelper();
+                gen_client_cs = true;
+            }
 
             string[] files = Directory.GetFiles(excelDir, "*.xlsx", SearchOption.TopDirectoryOnly);
-            //var time = new Stopwatch();
-            //time.Start();
+            var tasks = new List<Task>(files.Length * 4);
+            var time = new Stopwatch();
+            time.Start();
             foreach (string filepath in files)
             {
                 var fileName = Path.GetFileName(filepath);
@@ -42,10 +55,65 @@ namespace Saro.Table
                 Console.WriteLine();
                 Console.WriteLine("process xls: " + fileName);
 
-                try
-                {
-                    var sheets = helper.LoadExcelFile(filepath);
+#if true
+                var excelDatas = TableHelper.LoadExcel_V1(filepath);
 
+                tasks.Add(Task.Run(() =>
+                {
+                    foreach (var excelData in excelDatas)
+                    {
+                        string clientPath = clientOutDir + excelData.tablName + ".txt";
+                        //string serverPath = serverOutDir + sheets[i].SheetName + ".txt";
+
+                        Console.WriteLine("parsing...... " + excelData.tablName);
+
+                        TableHelper.WriteByteAsset(excelData, clientPath);
+                    }
+
+                    if (gen_client_cs)
+                    {
+                        var codepath = csOutDir + "/" + fileName + ".cs";
+
+                        CodeGen.MakeCsharpFile(excelDatas, codepath);
+                    }
+                }));
+#endif
+
+#if false
+                var excelDatas = TableHelper.LoadExcelFileAsync_EPPlus(filepath);
+                //tasks.Add(Task.Run(() =>
+                //{
+                //    foreach (var excelData in excelDatas)
+                //    {
+                //        Console.WriteLine();
+                //        Console.WriteLine("parsing...... " + excelData.tablName);
+                //        string clientPath = clientOutDir + excelData.tablName + ".txt";
+                //        //string serverPath = serverOutDir + sheets[i].SheetName + ".txt";
+
+                //        TableHelper.WriteByteAsset(excelData, clientPath);
+                //    }
+
+
+                //    if (cmder.Has("--out_cs"))
+                //    {
+                //        csOutDir = cmder.Get("--out_cs");
+                //        if (!Directory.Exists(csOutDir))
+                //            Directory.CreateDirectory(csOutDir);
+
+                //        var codepath = csOutDir + "/" + fileName + ".cs";
+
+                //        CodeGen.MakeCsharpFile(excelDatas, codepath);
+                //        Console.WriteLine();
+                //        Console.WriteLine($"generate {codepath} successful!");
+                //    }
+                //}));
+#endif
+
+#if false
+                var sheets = TableHelper.LoadExcelFile(filepath);
+
+                tasks.Add(Task.Run(() =>
+                {
                     for (int i = 0; i < sheets.Count; i++)
                     {
                         Console.WriteLine();
@@ -53,37 +121,33 @@ namespace Saro.Table
                         string clientPath = clientOutDir + sheets[i].SheetName + ".txt";
                         //string serverPath = serverOutDir + sheets[i].SheetName + ".txt";
 
-                        var data = helper.ParseExcel(sheets[i]);
+                        var data = TableHelper.ParseExcel(sheets[i]);
+                        TableHelper.WriteByteAsset(data, clientPath);
 
-                        //Console.WriteLine(data.ToString());
+                        if (cmder.Has("--out_cs"))
+                        {
+                            csOutDir = cmder.Get("--out_cs");
+                            if (!Directory.Exists(csOutDir))
+                                Directory.CreateDirectory(csOutDir);
 
-                        //helper.WriteTxtAsset(data, clientPath);
-                        helper.WriteByteAsset(data, clientPath);
+                            var codepath = csOutDir + "/" + fileName + ".cs";
 
-                        clientExcelDataList.Add(data);
+                            CodeGen.MakeCsharpFile(new List<ExcelData> { data }, codepath);
+                            Console.WriteLine();
+                            Console.WriteLine($"generate {codepath} successful!");
+                        }
                     }
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine("export error！" + filepath);
-                    Console.WriteLine(e.ToString());
-                }
+                }));
+#endif
             }
-            //time.Stop();
-            //Console.WriteLine("end: " + time.ElapsedMilliseconds);
+
+            await Task.WhenAll(tasks);
+
             Console.WriteLine();
             Console.WriteLine("export success!");
 
-            if (cmder.Has("--out_cs"))
-            {
-                csOutDir = cmder.Get("--out_cs");
-                if (!Directory.Exists(csOutDir))
-                    Directory.CreateDirectory(csOutDir);
-
-                CodeGen.MakeCsharpFile(clientExcelDataList, csOutDir);
-                Console.WriteLine();
-                Console.WriteLine("generate .cs code successful!");
-            }
+            time.Stop();
+            Console.WriteLine($"process finish: {time.ElapsedMilliseconds} ms");
         }
     }
 }

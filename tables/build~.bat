@@ -2,15 +2,15 @@
 
 REM https://www.cnblogs.com/lixiaobin/p/MsbuildSetting.html
 
-REM MSBuild.exe Â·¾¶
+REM MSBuild.exe Â·ï¿½ï¿½
 set MSBUILD_PATH=MSBuild.exe
-REM solution Â·¾¶
+REM solution Â·ï¿½ï¿½
 set SOLUTION_FILE=..\tabtool\tabtool.csproj
 REM Release / Debug
 set BUILD_CONFIG=Release
 REM build / rebuild / clean
 set BUILD_TYPE=clean;build
-REM AnyCPU(²»ÄÜ´ø¿Õ¸ñ) / x64 / x86
+REM AnyCPU(ï¿½ï¿½ï¿½Ü´ï¿½ï¿½Õ¸ï¿½) / x64 / x86
 set BUILD_PLATFORM="AnyCPU"
 set OUTPUT_PATH=..\tables\bin\
 

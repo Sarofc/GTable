@@ -1,35 +1,77 @@
-﻿using System;
+﻿using NPOI.SS.UserModel;
+using NPOI.XSSF.UserModel;
+using System;
 using System.IO;
 
 namespace Saro.Table.sample
 {
     class Program
     {
-        public const string k_ConfigPath = @"..\..\generate\data\";
+        public const string k_ConfigPath = @"..\..\..\generate\data\";
 
         static void Main(string[] args)
         {
-            TableCfg.s_TableSrc = k_ConfigPath;
+            //Test();
 
-            TableCfg.s_BytesLoader = path =>
+            RenameSheets();
+        }
+
+        private static void RenameSheets()
+        {
+            var excels = @"C:\Users\sarof\Projects\Git\tabtool\tables\excel";
+
+            string[] files = Directory.GetFiles(excels, "*.xlsx", SearchOption.TopDirectoryOnly);
+
+            var sheetIndex = 0;
+
+            foreach (string filepath in files)
             {
-                using (var fs = new FileStream(path, FileMode.Open))
+                IWorkbook workbook;
+
+                using (FileStream fs = new FileStream(filepath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                 {
-                    var data = new byte[fs.Length];
-                    fs.Read(data, 0, data.Length);
-                    return data;
+                    workbook = new XSSFWorkbook(fs);
                 }
-            };
 
-            csvTest.Get().Load();
-            Console.WriteLine(csvTest.Get().PrintTable());
+                for (int i = 0; i < workbook.NumberOfSheets; i++)
+                {
+                    var sheet = workbook.GetSheetAt(i);
 
-            csvTest1.Get().Load();
-            Console.WriteLine(csvTest1.Get().PrintTable());
+                    workbook.SetSheetName(i, "Test" + sheetIndex++);
 
-            Console.WriteLine(string.Join(",", csvTest2.Query(0, 0, 0).float_arr));
+                    Console.WriteLine($"rename: {sheet.SheetName}");
+                }
 
-            csvTest2.Get().Unload();
+                using (var fs1 = new FileStream(filepath, FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
+                {
+                    workbook.Write(fs1);
+                }
+            }
+        }
+
+        private static void Test()
+        {
+            //TableCfg.s_TableSrc = k_ConfigPath;
+
+            //TableCfg.s_BytesLoader = path =>
+            //{
+            //    using (var fs = new FileStream(path, FileMode.Open))
+            //    {
+            //        var data = new byte[fs.Length];
+            //        fs.Read(data, 0, data.Length);
+            //        return data;
+            //    }
+            //};
+
+            //csvTest.Get().Load();
+            //Console.WriteLine(csvTest.Get().PrintTable());
+
+            //csvTest1.Get().Load();
+            //Console.WriteLine(csvTest1.Get().PrintTable());
+
+            //Console.WriteLine(string.Join(",", csvTest2.Query(0, 0, 0).float_arr));
+
+            //csvTest2.Get().Unload();
 
             Console.ReadKey();
         }
