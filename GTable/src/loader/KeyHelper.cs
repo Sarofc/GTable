@@ -1,18 +1,23 @@
 ﻿
+using System.Runtime.CompilerServices;
+
 namespace Saro.Table
 {
     public class KeyHelper
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ulong GetKey(int key1)
         {
             return (ulong)key1;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ulong GetKey(int key1, int key2)
         {
             return (((ulong)key1 & 0xffffffff) | (((ulong)key2 & 0xffffffff) << 32));
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ulong GetKey(int key1, int key2, int key3)
         {
             short shortKey2 = System.Convert.ToInt16(key2);
@@ -20,6 +25,7 @@ namespace Saro.Table
             return (((ulong)key1 & 0xffffffff) | (((ulong)shortKey2 & 0xffff) << 32) | (((ulong)shortKey3 & 0xffff) << 48));
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ulong GetKey(int key1, int key2, int key3, int key4)
         {
             short shortKey1 = System.Convert.ToInt16(key1);

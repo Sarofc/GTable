@@ -5,7 +5,7 @@ REM https://www.cnblogs.com/lixiaobin/p/MsbuildSetting.html
 REM MSBuild.exe ·��
 set MSBUILD_PATH=MSBuild.exe
 REM solution ·��
-set SOLUTION_FILE=..\tabtool\tabtool.csproj
+set SOLUTION_FILE=..\GTable\GTable.csproj
 REM Release / Debug
 set BUILD_CONFIG=Release
 REM build / rebuild / clean

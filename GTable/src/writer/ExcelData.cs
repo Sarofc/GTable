@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Saro.Table
 {
-    internal class ExcelData
+    public class ExcelData
     {
         public string tablName;
         public List<Header> header;
@@ -64,7 +64,7 @@ namespace Saro.Table
         /// <summary>
         /// 数据表头
         /// </summary>
-        internal class Header
+        public class Header
         {
             /// <summary>
             /// 定义
