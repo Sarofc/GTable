@@ -14,7 +14,7 @@ namespace Saro.Table.sample
         {
             var line = "1,1,1,1";
 
-            Span<byte> bytes = stackalloc byte[32];
+            var bytes = new byte[32];
 
             var span = line.AsSpan();
             var arr = span.Split(',');
@@ -32,7 +32,6 @@ namespace Saro.Table.sample
             {
                 //Console.WriteLine(bytes[k]);
             }
-            bytes.Clear();
         }
 
         [Benchmark]

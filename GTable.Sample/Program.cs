@@ -11,11 +11,49 @@ namespace Saro.Table.sample
 
         static void Main(string[] args)
         {
-            TestTable();
+            //TestTable();
+
+            var key0 = KeyHelper.GetKey(-10, -20);
+            Console.WriteLine($"{key0} {KeyHelper.SplitKey2(key0)}");
+
+            var key1 = KeyHelper.GetKey(-10, -20, -30);
+            Console.WriteLine($"{key1} {KeyHelper.SplitKey3(key1)}");
+
+            var key2 = KeyHelper.GetKey(-10, -20, -30, -40);
+            Console.WriteLine($"{key2} {KeyHelper.SplitKey4(key2)}");
+
+
+            var key3 = KeyCombine(-10, -20);
+            var result = SplitKey(key3);
+
+            Console.WriteLine($"{key3} {result}");
 
             //BenchmarkRunner.Run<Bench_Split>();
         }
-        
+
+        private static ulong KeyCombine(int key1, int key2)
+        {
+            // Note: if you're in a checked context by default, you'll want to make this
+            // explicitly unchecked
+            uint u1 = (uint)key1;
+            uint u2 = (uint)key2;
+
+            ulong unsignedKey = u1 | (((ulong)u2) << 32);
+            return unsignedKey;
+        }
+
+        private static (int key1, int key2) SplitKey(ulong key)
+        {
+            //And to reverse:
+            ulong unsignedKey = key;
+            uint highBits = (uint)(unsignedKey & 0xffffffffUL);
+            uint lowBits = (uint)(unsignedKey >> 32);
+            int i1 = (int)highBits;
+            int i2 = (int)lowBits;
+
+            return (i1, i2);
+        }
+
 
         private static void TestTable()
         {

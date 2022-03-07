@@ -2,11 +2,11 @@
 
 echo copy tables folder to unity project
 
-set UNITY_PROJECT_PATH=..\..\souls
+set UNITY_PROJECT_PATH=..\..\tetris-unity
 
 set TABLETOOL_NAME=tables
 set TABLETOOL_PATH=..\%TABLETOOL_NAME%
-set UNITY_PROJECT_TABLE_PATH=%UNITY_PROJECT_PATH%\%TABLETOOL_NAME%
+set UNITY_PROJECT_TABLE_PATH=%UNITY_PROJECT_PATH%\GameTools\%TABLETOOL_NAME%
 
 set TABLETOOL_SCRIPT_PATH=..\GTable\src\loader
 set UNITY_PROJECT_SCRIPT_PATH=%UNITY_PROJECT_PATH%\Assets\Scripts\Generate\TableLoader

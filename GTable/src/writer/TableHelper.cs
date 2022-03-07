@@ -222,7 +222,7 @@ namespace Saro.Table
                             if (IsKey(data.header[j]))
                             {
                                 if (!res)
-                                    throw new Exception($"{data.tablName} write {t} failed.");
+                                    throw new Exception($"{data.tablName} write {t} \"{line[j]}\" failed.");
 
                                 keys.Add(val);
                             }
@@ -233,7 +233,7 @@ namespace Saro.Table
                             bw.Write(val);
 
                             if (!string.IsNullOrEmpty(line[j]) && !res)
-                                throw new Exception($"{data.tablName} write {t} failed.");
+                                throw new Exception($"{data.tablName} write {t} \"{line[j]}\" failed.");
                         }
                         else if (t == typeof(float))
                         {
@@ -241,7 +241,7 @@ namespace Saro.Table
                             bw.Write(val);
 
                             if (!string.IsNullOrEmpty(line[j]) && !res)
-                                throw new Exception($"{data.tablName} write {t} failed.");
+                                throw new Exception($"{data.tablName} write {t} \"{line[j]}\" failed.");
                         }
                         else if (t == typeof(bool))
                         {
@@ -249,7 +249,7 @@ namespace Saro.Table
                             bw.Write(val);
 
                             if (!string.IsNullOrEmpty(line[j]) && !res)
-                                throw new Exception($"{data.tablName} write {t} failed.");
+                                throw new Exception($"{data.tablName} write {t} \"{line[j]}\" failed.");
                         }
                         else if (t == typeof(string))
                         {
