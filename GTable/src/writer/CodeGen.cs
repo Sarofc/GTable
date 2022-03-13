@@ -92,7 +92,7 @@ namespace Saro.Table
             sb.AppendLine("\t\t\t\tusing (var br = new BinaryReader(ms))");
             sb.AppendLine("\t\t\t\t{");
             sb.AppendLine("\t\t\t\t\tvar version = br.ReadInt32();//version");
-            sb.AppendLine("\t\t\t\t\tif (version != TableCfg.k_DataVersion)\n\t\t\t\t\t\tthrow new System.Exception($\"error version. file:{version}  exe:{TableCfg.k_DataVersion}\");\n");
+            sb.AppendLine("\t\t\t\t\tif (version != TableCfg.k_DataVersion)\n\t\t\t\t\t\tthrow new System.Exception($\"table error version. file:{version}  exe:{TableCfg.k_DataVersion}\");\n");
             sb.AppendLine("\t\t\t\t\tvar dataLen = br.ReadInt32();");
             sb.AppendLine("\t\t\t\t\tfor (int i = 0; i < dataLen; i++)");
             sb.AppendLine("\t\t\t\t\t{");
