@@ -57,9 +57,9 @@ namespace Saro.Table.sample
 
         private static void TestTable()
         {
-            TableCfg.s_TableSrc = k_ConfigPath;
+            TableLoader.s_TableSrc = k_ConfigPath;
 
-            TableCfg.s_BytesLoader = path =>
+            TableLoader.s_BytesLoader = path =>
             {
                 using (var fs = new FileStream(path, FileMode.Open))
                 {

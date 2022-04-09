@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace Saro.Table
 {
@@ -35,12 +36,22 @@ namespace Saro.Table
 
         public abstract bool Load();
 
+        public abstract ValueTask<bool> LoadAsync();
+
         protected byte[] GetBytes(string tableName)
         {
-            if (TableCfg.s_BytesLoader != null)
+            if (TableLoader.s_BytesLoader != null)
             {
-                //var path = Path.Combine(TableCfg.s_TableSrc, tableName);
-                return TableCfg.s_BytesLoader(tableName);
+                return TableLoader.s_BytesLoader(tableName);
+            }
+            return null;
+        }
+
+        protected async ValueTask<byte[]> GetBytesAsync(string tableName)
+        {
+            if (TableLoader.s_BytesLoaderAsync != null)
+            {
+                return await TableLoader.s_BytesLoaderAsync(tableName);
             }
             return null;
         }

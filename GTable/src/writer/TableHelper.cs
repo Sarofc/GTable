@@ -188,7 +188,7 @@ namespace Saro.Table
             {
                 BinaryWriter bw = new BinaryWriter(fs, Encoding.UTF8);
 
-                bw.Write(TableCfg.k_DataVersion);
+                bw.Write(TableLoader.k_DataVersion);
                 bw.Write(data.rowValues.Count);//行数据长度
 
                 var keys = new List<int>();
