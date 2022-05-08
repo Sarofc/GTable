@@ -40,20 +40,22 @@ namespace Saro.Table
 
         protected byte[] GetBytes(string tableName)
         {
-            if (TableLoader.s_BytesLoader != null)
+            if (TableLoader.s_BytesLoader == null)
             {
-                return TableLoader.s_BytesLoader(tableName);
+                throw new NullReferenceException("MUST register TableLoader.s_BytesLoader handler");
             }
-            return null;
+
+            return TableLoader.s_BytesLoader(tableName);
         }
 
         protected async ValueTask<byte[]> GetBytesAsync(string tableName)
         {
-            if (TableLoader.s_BytesLoaderAsync != null)
+            if (TableLoader.s_BytesLoaderAsync == null)
             {
-                return await TableLoader.s_BytesLoaderAsync(tableName);
+                throw new NullReferenceException("MUST register TableLoader.s_BytesLoaderAsync handler");
             }
-            return null;
+
+            return await TableLoader.s_BytesLoaderAsync(tableName);
         }
 
         public void Unload()

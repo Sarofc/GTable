@@ -10,9 +10,8 @@
 - [x] 代码生成
 - [x] 枚举Key
 - [x] 支持1~4个key
-- [ ] lua支持
-- [ ] 支持双端代码生成
-- [ ] 多语言
+- [ ] 客户端服务器区分
+- [ ] 热更新支持（考虑使用huatuo）
 
 ## Excel表头
 
@@ -44,33 +43,66 @@
 >>☞ 参考`tables/*.bat`的用法。</br>
  ☞ Excel格式参考`tables/excel`下的表。
 
+ 1. build~.bat 编译，需设置msbuild环境变量
+ 2. copy_for_unity~.bat 将tables目录拷贝到指定目录，需设置`UNITY_PROJECT_PATH`
+ 3. export_all_for_unity.bat 生成表格数据和解析代码
+ 4. export_data_for_unity.bat 仅生成表格数据，适用于表结构未改变的情况
+ 5. export~.bat 用于非unity项目，功能同export_all_for_unity.bat
+
 ### 2.读取数据
 
 ```csharp
-    // 设置数据表路径
-    TableCfg.s_TableSrc = k_ConfigPath;
+using Saro.Table;
+using System;
+using System.IO;
 
-    // 数据表加载委托
-    TableCfg.s_BytesLoader = path =>
+const string k_ConfigPath = @"..\..\..\generate\data\";
+
+// setup load handler
+TableLoader.s_BytesLoader = name =>
+{
+    var path = k_ConfigPath + name;
+    using (var fs = new FileStream(path, FileMode.Open))
     {
-        using (var fs = new FileStream(path, FileMode.Open))
-        {
-            var data = new byte[fs.Length];
-            fs.Read(data, 0, data.Length);
-            return data;
-        }
-    };
+        var data = new byte[fs.Length];
+        fs.Read(data, 0, data.Length);
+        return data;
+    }
+};
 
-    // 加载指定数据表
+TableLoader.s_BytesLoaderAsync = async name =>
+{
+    var path = k_ConfigPath + name;
+    using (var fs = new FileStream(path, FileMode.Open))
+    {
+        var data = new byte[fs.Length];
+        var buffer = new Memory<byte>(data);
+        await fs.ReadAsync(buffer);
+        return data;
+    }
+};
 
-    csvTest1.Get().Load();
+// load sync
+{
+    Console.WriteLine("load sync");
+    var result = csvTest1.Get().Load();
     Console.WriteLine(csvTest1.Get().PrintTable());
-
-    // 通过 csvXXX.Query(key1,key2,...) 获取行数据
     Console.WriteLine(string.Join(",", csvTest1.Query(0, 0, 0).float_arr));
-
-    // 卸载指定数据表
+    Console.WriteLine(string.Join(",", csvTest1.Query(0, 0, 0).map_int_int));
     csvTest1.Get().Unload();
+}
+
+// load async
+{
+    Console.WriteLine();
+    Console.WriteLine("load async");
+    var result = await csvTest0.Get().LoadAsync();
+    Console.WriteLine(string.Join(",", csvTest0.Query(0, 0, 0).float_arr));
+    Console.WriteLine(string.Join(",", csvTest0.Query(0, 0, 0).map_int_int));
+    csvTest0.Get().Unload();
+}
+
+Console.ReadKey();
 ```
 
 ## Nuget依赖
