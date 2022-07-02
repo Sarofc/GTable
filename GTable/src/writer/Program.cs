@@ -68,7 +68,7 @@ namespace Saro.Table
 
                         if (gen_client_cs)
                         {
-                            var codepath = csOutDir + "/t" + excelData.tablName + ".cs";
+                            var codepath = csOutDir + "/t" + excelData.tablName + ".gen.cs";
                             CodeGen.MakeCsharpFile(excelData, codepath);
                         }
                     }
