@@ -35,7 +35,7 @@
 
 ### 0. unity
 
-使用 upm git，链接 https://github.com/Sarofc/GTable.git?path=/GTable/src
+使用 upm git，链接 https://github.com/Sarofc/GTable.git?path=/GTable.Core/src
 
 ### 1.一键打表
 
