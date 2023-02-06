@@ -1,0 +1,18 @@
+{
+    "name": "Saro.GTable.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:8dee773231e0c464692ab4a777b7794d"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

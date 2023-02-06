@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Saro.Table
+namespace Saro.GTable
 {
     public static class TableLoader
     {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace Saro.Table
+namespace Saro.GTable
 {
     public abstract class BaseTable<TValue, TWrapper> where TWrapper : new()
     {

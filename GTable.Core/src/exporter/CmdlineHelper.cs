@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
 
-namespace Saro.Table
+namespace Saro.GTable
 {
     class CmdlineHelper
     {

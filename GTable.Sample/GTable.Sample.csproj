@@ -15,12 +15,18 @@
     <DefineConstants>$(DefineConstants)TRACE;ENABLE_TABLE_LOG</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="generate\data\Test.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="0.13.1" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\GTable\GTable.csproj" />
+    <ProjectReference Include="..\GTable.Core\GTable.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="generate\cs\" />
+    <Folder Include="generate\data\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="excel\Test-0.xlsx">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>

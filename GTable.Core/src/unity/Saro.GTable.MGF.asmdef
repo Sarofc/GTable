@@ -1,0 +1,21 @@
+{
+    "name": "Saro.GTable.MGF",
+    "rootNamespace": "",
+    "references": [
+        "Saro.MGF",
+        "Saro.GTable.Editor",
+        "Saro.MoonAsset.Editor",
+        "ToolbarExtender.Editor"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

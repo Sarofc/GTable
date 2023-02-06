@@ -10,8 +10,9 @@
 - [x] 代码生成
 - [x] 枚举Key
 - [x] 支持1~4个key
+- [x] hybridclr热更新
+- [ ] 定点数支持
 - [ ] 客户端服务器区分
-- [ ] 热更新支持（考虑使用huatuo）
 
 ## Excel表头
 
@@ -31,6 +32,10 @@
 >> 结果: 导出数据+代码，花费7000ms
 
 ## 如何使用
+
+### 0. unity
+
+使用 upm git，链接 https://github.com/Sarofc/GTable.git?path=/GTable/src
 
 ### 1.一键打表
 

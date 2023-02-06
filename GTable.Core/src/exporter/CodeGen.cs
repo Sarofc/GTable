@@ -6,7 +6,7 @@ using System.CodeDom;
 using Microsoft.CSharp;
 using System.CodeDom.Compiler;
 
-namespace Saro.Table
+namespace Saro.GTable
 {
     class CodeGen
     {
@@ -28,7 +28,7 @@ namespace Saro.Table
             var sb = new StringBuilder(2048);
 
             var unit = new CodeCompileUnit();
-            var tableNamespace = new CodeNamespace("Saro.Table");
+            var tableNamespace = new CodeNamespace("Saro.GTable");
             unit.Namespaces.Add(tableNamespace);
             tableNamespace.Imports.Add(new CodeNamespaceImport("System.Collections"));
             tableNamespace.Imports.Add(new CodeNamespaceImport("System.Collections.Generic"));
@@ -36,7 +36,7 @@ namespace Saro.Table
             tableNamespace.Imports.Add(new CodeNamespaceImport("System.Text"));
 
             var enumDefineList = new List<int>();
-            
+
             #region item class
 
             var itemClass = new CodeTypeDeclaration(excelData.GetEntityClassName());
@@ -562,19 +562,21 @@ namespace Saro.Table
 
             #endregion
 
+#if NET6_OR_NEWER && false
             var options = new FileStreamOptions { Mode = FileMode.Create, Access = FileAccess.Write, Share = FileShare.ReadWrite };
-
-            var tw = new IndentedTextWriter(new StreamWriter(csfile, options), "\t");
-            {
-                var provider = new CSharpCodeProvider();
-                tw.WriteLine("//------------------------------------------------------------------------------");
-                tw.WriteLine("// File   : {0}", Path.GetFileName(codepath));
-                tw.WriteLine("// Author : Saro");
-                tw.WriteLine("// Time   : {0}", DateTime.Now.ToString());
-                tw.WriteLine("//------------------------------------------------------------------------------");
-                provider.GenerateCodeFromCompileUnit(unit, tw, new CodeGeneratorOptions() { BracingStyle = "C" });
-                tw.Close();
-            }
+            using var tw = new IndentedTextWriter(new StreamWriter(csfile, options), "\t");
+#else
+            using var fs = new FileStream(csfile, FileMode.Create, FileAccess.Write, FileShare.ReadWrite);
+            //using var tw = new IndentedTextWriter(new StreamWriter(fs), "\t"); // bug? 文本不全
+            using var tw = new StreamWriter(fs);
+#endif
+            var provider = new CSharpCodeProvider();
+            tw.WriteLine("//------------------------------------------------------------------------------");
+            tw.WriteLine("// File   : {0}", Path.GetFileName(codepath));
+            tw.WriteLine("// Author : Saro");
+            tw.WriteLine("// Time   : {0}", DateTime.Now.ToString());
+            tw.WriteLine("//------------------------------------------------------------------------------");
+            provider.GenerateCodeFromCompileUnit(unit, tw, new CodeGeneratorOptions() { BracingStyle = "C" });
         }
     }
 }

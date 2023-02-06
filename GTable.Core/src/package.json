@@ -1,0 +1,12 @@
+{
+    "name": "com.saro.gtable",
+    "version": "0.1.0",
+    "displayName": "GTable",
+    "description": "excel配置表工具",
+    "unity": "2021.3",
+    "dependencies": {},
+    "author": {
+        "name": "saro"
+    },
+    "type": "library"
+}

@@ -1,5 +1,0 @@
-~.
-.xls
-.xlsx
-.xml
-.pdb

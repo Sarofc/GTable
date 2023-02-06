@@ -1,7 +1,7 @@
 
 using System.Runtime.CompilerServices;
 
-namespace Saro.Table
+namespace Saro.GTable
 {
     public class KeyHelper
     {

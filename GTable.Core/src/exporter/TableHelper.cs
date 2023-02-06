@@ -1,4 +1,3 @@
-
 using System;
 using System.IO;
 using System.Collections.Generic;
@@ -6,16 +5,12 @@ using System.Text;
 using ExcelDataReader;
 using System.Linq;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
-namespace Saro.Table
+namespace Saro.GTable
 {
     public static class TableHelper
     {
-        static TableHelper()
-        {
-            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-        }
-
         private static ExcelData ParseExcel(IExcelDataReader reader)
         {
             // excel 真实行列数
@@ -33,7 +28,7 @@ namespace Saro.Table
             data.header = new List<ExcelData.Header>(colCount);
             data.rowValues = new List<List<string>>(rowCount - 4);
 
-            //Console.WriteLine($"sheet: {reader.Name}  row x col = {rowCount} x {colCount}");
+            //Log.LogInfo($"sheet: {reader.Name}  row x col = {rowCount} x {colCount}");
 
             for (int i = 1, n = colCount; i < n; i++)
             {
@@ -53,7 +48,7 @@ namespace Saro.Table
                             if (isNull)
                             {
                                 colCount = i;
-                                //Console.WriteLine($"{data.tablName} typeName is empty. skip [{rowIndex + 1}{ConvertIntToOrderedLetter(i)}]. colCount: {colCount} i: {i}");
+                                //Log.LogInfo($"{data.tablName} typeName is empty. skip [{rowIndex + 1}{ConvertIntToOrderedLetter(i)}]. colCount: {colCount} i: {i}");
                                 break;
                             }
                         }
@@ -61,10 +56,10 @@ namespace Saro.Table
                         var value = isNull ? string.Empty : reader.GetValue(i).ToString();
                         data.header[i - 1].metas[rowIndex] = value;
 
-                        //Console.WriteLine($"[{rowIndex + 1}{ConvertIntToOrderedLetter(i)}] = {value}");
+                        //Log.LogInfo($"[{rowIndex + 1}{ConvertIntToOrderedLetter(i)}] = {value}");
                     }
 
-                    //Console.WriteLine($"{data.header.Count} {string.Join("\t", data.header.Select(h => h.metas[rowIndex]))}");
+                    //Log.LogInfo($"{data.header.Count} {string.Join("\t", data.header.Select(h => h.metas[rowIndex]))}");
                 }
                 else
                 {
@@ -76,7 +71,7 @@ namespace Saro.Table
                         {
                             if (isNull)
                             {
-                                //Console.WriteLine($"{data.tablName} key is empty. skip: [{rowIndex + 1}{ConvertIntToOrderedLetter(i)}]");
+                                //Log.LogInfo($"{data.tablName} key is empty. skip: [{rowIndex + 1}{ConvertIntToOrderedLetter(i)}]");
                                 // 第一个 key 没有值，则中断处理
                                 goto END;
                             }
@@ -86,7 +81,7 @@ namespace Saro.Table
                         var value = isNull ? string.Empty : reader.GetValue(i).ToString();
                         data.rowValues[rowIndex - 4].Add(value);
 
-                        //Console.WriteLine($"[{rowIndex + 1}{ConvertIntToOrderedLetter(i)}] = {value}");
+                        //Log.LogInfo($"[{rowIndex + 1}{ConvertIntToOrderedLetter(i)}] = {value}");
                     }
                 }
 
@@ -102,17 +97,17 @@ namespace Saro.Table
                 data.header.RemoveAt(data.header.Count - 1);
             }
 
-            //Console.WriteLine($"sheet: {reader.Name} row x col = {rowCount} x {colCount}");
+            //Log.LogInfo($"sheet: {reader.Name} row x col = {rowCount} x {colCount}");
 
-            Debug.Assert(colCount - 1 == data.header.Count, $"{data.tablName}'s colCount is invalid.");
-            Debug.Assert(rowCount - 4 == data.rowValues.Count, $"{data.tablName}'s rowCount is invalid.");
+            Log.Assert(colCount - 1 == data.header.Count, $"{data.tablName}'s colCount is invalid.");
+            Log.Assert(rowCount - 4 == data.rowValues.Count, $"{data.tablName}'s rowCount is invalid.");
 
             return data;
         }
 
         public static IEnumerable<ExcelData> LoadExcel(string filePath)
         {
-            //Console.WriteLine("process xls: " + filePath);
+            //Log.LogInfo("process xls: " + filePath);
 
             using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
             {
@@ -127,7 +122,7 @@ namespace Saro.Table
                             ExcelData data;
                             try
                             {
-                                Console.WriteLine($"parsing...... {reader.Name} ({counter}/{reader.ResultsCount})");
+                                Log.Info($"parsing...... {reader.Name} ({counter}/{reader.ResultsCount})");
                                 data = ParseExcel(reader);
                             }
                             catch (Exception e)
@@ -173,10 +168,16 @@ namespace Saro.Table
         /// </summary>
         /// <param name="data"></param>
         /// <param name="path"></param>
+        //[SkipLocalsInit]
         internal static void WriteByteAsset(ExcelData data, string path)
         {
-            //Console.WriteLine($"{data.tablName} write to {path}");
+            //Log.LogInfo($"{data.tablName} write to {path}");
 
+            // TODO
+            // 1. 支持定点数，直接用浮点数存储行不行？
+            // 2. 使用 IBufferWriter 优化 io 性能
+
+            // 最大数组大小 只支持 64 
             const int MAX_ARRAY_LENGTH = 64;
 
             Span<byte> bytes = stackalloc byte[MAX_ARRAY_LENGTH];

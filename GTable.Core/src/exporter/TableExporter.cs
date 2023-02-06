@@ -1,34 +1,33 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Saro.Table
+namespace Saro.GTable
 {
-    class Program
+    public class TableExporter
     {
-        static async Task Main(string[] args)
+        /// <summary>
+        /// --out_client [TABLE_DATA] --out_cs [TABLE_CS] --in_excel [TABLE_EXCEL]
+        /// </summary>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        public static async Task ExportAsync(params string[] args)
         {
-            await Load(args);
-        }
-
-        static async Task Load(string[] args)
-        {
-            int processorCount = System.Environment.ProcessorCount;
+            int processorCount = Environment.ProcessorCount;
             ThreadPool.SetMinThreads(Math.Max(4, processorCount), 5);
             ThreadPool.SetMaxThreads(Math.Max(16, processorCount * 4), 10);
 
             string clientOutDir = null, serverOutDir = null, csOutDir = null, excelDir = null;
             CmdlineHelper cmder = new CmdlineHelper(args);
-            if (cmder.Has("--out_client")) { clientOutDir = cmder.Get("--out_client"); } else { Console.WriteLine("out_client missing"); return; }
+            if (cmder.Has("--out_client")) { clientOutDir = cmder.Get("--out_client"); } else { Log.Info("out_client missing"); return; }
             ////if (cmder.Has("--out_server")) { serverOutDir = cmder.Get("--out_server"); } else { return; }
-            if (cmder.Has("--in_excel")) { excelDir = cmder.Get("--in_excel"); } else { Console.WriteLine("in_excel missing"); return; }
+            if (cmder.Has("--in_excel")) { excelDir = cmder.Get("--in_excel"); } else { Log.Info("in_excel missing"); return; }
 
-            //Console.WriteLine(clientOutDir);
-            //Console.WriteLine(excelDir);
+            //Log.LogInfo(clientOutDir);
+            //Log.LogInfo(excelDir);
 
             //创建导出目录
             if (!Directory.Exists(clientOutDir)) Directory.CreateDirectory(clientOutDir);
@@ -38,6 +37,11 @@ namespace Saro.Table
             if (cmder.Has("--out_cs"))
             {
                 csOutDir = cmder.Get("--out_cs");
+
+                // TODO 这个操作很危险，最好能移动到回收站
+                // if(Directory.Exists(csOutDir))
+                //    Directory.Delete(csOutDir, true);
+
                 if (!Directory.Exists(csOutDir))
                     Directory.CreateDirectory(csOutDir);
 
@@ -53,7 +57,7 @@ namespace Saro.Table
                 var fileName = Path.GetFileName(filepath);
                 if (fileName.StartsWith("~")) continue;
 
-                //Console.WriteLine($"[program] load excel {filepath}");
+                //Log.LogInfo($"[program] load excel {filepath}");
 
                 var excelDatas = TableHelper.LoadExcel(filepath);
 
@@ -68,7 +72,7 @@ namespace Saro.Table
 
                         if (gen_client_cs)
                         {
-                            var codepath = csOutDir + "/t" + excelData.tablName + ".gen.cs";
+                            var codepath = csOutDir + "/t" + excelData.tablName + ".g.cs";
                             CodeGen.MakeCsharpFile(excelData, codepath);
                         }
                     }
@@ -77,11 +81,11 @@ namespace Saro.Table
 
             await Task.WhenAll(tasks);
 
-            Console.WriteLine();
-            Console.WriteLine("export success!");
+            Log.Info("");
+            Log.Info("export success!");
 
             time.Stop();
-            Console.WriteLine($"process finish: {time.ElapsedMilliseconds} ms");
+            Log.Info($"process finish: {time.ElapsedMilliseconds} ms");
         }
     }
 }
