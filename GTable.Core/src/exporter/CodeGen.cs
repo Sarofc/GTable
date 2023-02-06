@@ -571,11 +571,11 @@ namespace Saro.GTable
             using var tw = new StreamWriter(fs);
 #endif
             var provider = new CSharpCodeProvider();
-            tw.WriteLine("//------------------------------------------------------------------------------");
-            tw.WriteLine("// File   : {0}", Path.GetFileName(codepath));
-            tw.WriteLine("// Author : Saro");
-            tw.WriteLine("// Time   : {0}", DateTime.Now.ToString());
-            tw.WriteLine("//------------------------------------------------------------------------------");
+            //tw.WriteLine("//------------------------------------------------------------------------------");
+            //tw.WriteLine("// File   : {0}", Path.GetFileName(codepath));
+            //tw.WriteLine("// Author : Saro");
+            //tw.WriteLine("// Time   : {0}", DateTime.Now.ToString());
+            //tw.WriteLine("//------------------------------------------------------------------------------");
             provider.GenerateCodeFromCompileUnit(unit, tw, new CodeGeneratorOptions() { BracingStyle = "C" });
         }
     }
