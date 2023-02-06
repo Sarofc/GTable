@@ -29,6 +29,12 @@ namespace Saro.GTable
             //Log.LogInfo(clientOutDir);
             //Log.LogInfo(excelDir);
 
+            if (!Directory.Exists(excelDir))
+            {
+                Log.Info($"{excelDir} not found");
+                return;
+            }
+
             //创建导出目录
             if (!Directory.Exists(clientOutDir)) Directory.CreateDirectory(clientOutDir);
             //if (!Directory.Exists(serverOutDir)) Directory.CreateDirectory(serverOutDir);
