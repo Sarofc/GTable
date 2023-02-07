@@ -6,7 +6,7 @@ namespace Saro.GTable
     {
         public const string vfileName = "tables";
 
-        public const string in_excel = "./ExtraAssets/tables/excel";
+        public const string in_excel = "./Assets/Content/excel";
 
         public const string out_client = "./ExtraAssets/tables/data";
 
