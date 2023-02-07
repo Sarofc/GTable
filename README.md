@@ -2,7 +2,7 @@
 
 导表工具，excel表格导出二进制数据文件，并生成C#代码读取数据
 
-.net 6
+netstandard 2.1+net 6
 
 ## 特性
 
@@ -45,14 +45,8 @@
 <!--   --out_server 导出服务器配置文件目录<br> -->
 <!--   --out_cpp 导出C++代码目录，可选<br> -->
 
->>☞ 参考`tables/*.bat`的用法。</br>
- ☞ Excel格式参考`tables/excel`下的表。
-
- 1. build~.bat 编译，需设置msbuild环境变量
- 2. copy_for_unity~.bat 将tables目录拷贝到指定目录，需设置`UNITY_PROJECT_PATH`
- 3. export_all_for_unity.bat 生成表格数据和解析代码
- 4. export_data_for_unity.bat 仅生成表格数据，适用于表结构未改变的情况
- 5. export~.bat 用于非unity项目，功能同export_all_for_unity.bat
+- .net项目，可参考sample
+- unity项目，直接点击toolbar里的导出按钮，即可导表
 
 ### 2.读取数据
 
