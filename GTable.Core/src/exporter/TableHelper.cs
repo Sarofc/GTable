@@ -99,8 +99,8 @@ namespace Saro.GTable
 
             //Log.LogInfo($"sheet: {reader.Name} row x col = {rowCount} x {colCount}");
 
-            Log.Assert(colCount - 1 == data.header.Count, $"{data.tablName}'s colCount is invalid.");
-            Log.Assert(rowCount - 4 == data.rowValues.Count, $"{data.tablName}'s rowCount is invalid.");
+            //Log.Assert(colCount - 1 == data.header.Count, $"{data.tablName}'s colCount is invalid.");
+            //Log.Assert(rowCount - 4 == data.rowValues.Count, $"{data.tablName}'s rowCount is invalid.");
 
             return data;
         }

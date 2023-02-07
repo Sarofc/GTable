@@ -6,11 +6,11 @@ namespace Saro.GTable
     {
         public const string vfileName = "tables";
 
-        public const string in_excel = "./Assets/Content/excel";
+        public const string in_excel = "./Assets/Content/excel/";
 
-        public const string out_client = "./ExtraAssets/tables/data";
+        public const string out_client = "./ExtraAssets/tables/data/";
 
-        public const string out_cs = "./Assets/Scripts/Hotfix/gen/Tables";
+        public const string out_cs = "./Assets/Scripts/Hotfix/gen/Tables/";
     }
 }
 
