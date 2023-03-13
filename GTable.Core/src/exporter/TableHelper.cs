@@ -89,7 +89,7 @@ namespace Saro.GTable
             }
             while (reader.Read());
 
-        END:
+END:
 
 
             while (data.header.Count > colCount - 1)
@@ -470,7 +470,7 @@ namespace Saro.GTable
                 string.CompareOrdinal(header.define, TableHelper.HeaderFilter.k_ENUM_KEY) == 0;
         }
 
-        internal static Dictionary<string, Type> s_TypeLut = new Dictionary<string, Type>
+        internal static Dictionary<string, Type> s_TypeLut = new(StringComparer.Ordinal)
         {
             {"byte", typeof(byte) },
             {"int", typeof(int) },
