@@ -1,6 +1,7 @@
 ﻿#if UNITY_2017_1_OR_NEWER
 
 using System;
+using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
 using UnityToolbarExtender;
@@ -50,15 +51,20 @@ namespace Saro.GTable
             {
                 try
                 {
-                    string exporterPath = $"--out_client {GTableConfig.out_client} --out_cs {GTableConfig.out_cs} --in_excel {GTableConfig.in_excel}";
-
-                    TableExporter.ExportAsync(exporterPath.Split(" "));
+                    ExportTableAsync();
                 }
                 catch (Exception e)
                 {
                     Log.ERROR(e);
                 }
             }
+        }
+
+        [MenuItem("GTable/Export Table")]
+        public static async Task ExportTableAsync()
+        {
+            string exporterPath = $"--out_client {GTableConfig.out_client} --out_cs {GTableConfig.out_cs} --in_excel {GTableConfig.in_excel}";
+            await TableExporter.ExportAsync(exporterPath.Split(" "));
         }
     }
 }
